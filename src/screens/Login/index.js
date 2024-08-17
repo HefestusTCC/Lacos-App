@@ -1,4 +1,3 @@
-// App.js
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, Text, Alert } from 'react-native';
 
@@ -27,13 +26,14 @@ const App = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+      
+      <Text style={styles.title}>Bem Vindo(a) ao Laços</Text>
       <TextInput
         style={styles.input}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
-        placeholderTextColor="#FFF5E1"
+        placeholderTextColor="#000"
       />
       <TextInput
         style={styles.input}
@@ -41,10 +41,10 @@ const App = () => {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
-        placeholderTextColor="#FFF5E1"
+        placeholderTextColor="#000"
       />
       <View style={styles.buttonContainer}>
-        <Button title="Cadastrar" onPress={handleSignUp} color="#FFA07A" />
+        <Button title="Entrar" onPress={handleSignUp} color="#FF6E15" />
       </View>
     </View>
   );
@@ -53,31 +53,30 @@ const App = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFF5E1',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFF5E1",
     padding: 16,
   },
   title: {
     fontSize: 24,
     marginBottom: 16,
-    color: '#FFB347',
+    color: "#FF6E15",
   },
   input: {
-    width: '80%',
+    width: "80%",
     height: 40,
-    borderColor: '#FFA07A',
+    borderColor: "#000",
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 12,
     paddingHorizontal: 8,
-    backgroundColor: '#FFCCBC',
-    color: '#333',
+    color: "#000",
   },
   buttonContainer: {
-    width: '80%',
-    borderRadius: 8,
+    width: "80%",
+    borderRadius: 10,
   },
 });
 
-export default App;
+export default App;
