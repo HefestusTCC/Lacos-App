@@ -1,29 +1,41 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, Alert, Pressable } from 'react-native';
-import { auth } from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
+import React, { useState } from "react";
+import {
+  View,
+  TextInput,
+  Button,
+  StyleSheet,
+  Text,
+  Alert,
+  Image,
+  Pressable
+} from "react-native";
+import { auth } from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
 
-const App = ({ navigation }) => {
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [etecName, setEtecName] = useState('');
-  const [password, setPassword] = useState('');
-  const [course, setCourse] = useState('');
+const App = () => {
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [etecName, setEtecName] = useState("");
+  const [password, setPassword] = useState("");
+  const [course, setCourse] = useState("");
 
   const handleSignUp = async () => {
     if (!email || !username || !fullName || !etecName || !password || !course) {
-      Alert.alert('Por favor, preencha todos os campos.');
+      Alert.alert("Por favor, preencha todos os campos.");
       return;
     }
 
     try {
       // Criar conta de usuário no Firebase Authentication
-      const userCredential = await auth().createUserWithEmailAndPassword(email, password);
+      const userCredential = await auth().createUserWithEmailAndPassword(
+        email,
+        password
+      );
       const userId = userCredential.user.uid;
 
       // Salvar dados adicionais no Firestore
-      await firestore().collection('users').doc(userId).set({
+      await firestore().collection("users").doc(userId).set({
         email: email,
         username: username,
         fullName: fullName,
@@ -31,50 +43,56 @@ const App = ({ navigation }) => {
         course: course,
       });
 
-      Alert.alert('Usuário criado com sucesso!');
+      Alert.alert("Usuário criado com sucesso!");
 
       // Limpar campos após cadastro
-      setEmail('');
-      setUsername('');
-      setFullName('');
-      setEtecName('');
-      setPassword('');
-      setCourse('');
+      setEmail("");
+      setUsername("");
+      setFullName("");
+      setEtecName("");
+      setPassword("");
+      setCourse("");
     } catch (error) {
-      Alert.alert('Erro ao criar usuário:', error.message);
+      Alert.alert("Erro ao criar usuário:", error.message);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Cadastro</Text>
+      {/* Imagem no canto superior direito */}
+      <Image
+        source={require("../../../assets/logo.png")}
+        style={styles.divImage}
+      />
+
+      <Text style={styles.title}>
+        <Text style={styles.welcome}>Bem Vindo(a) ao</Text>{" "}
+        <Text style={styles.appName}>Laços</Text>
+      </Text>
+
       <TextInput
         style={styles.input}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
-        placeholderTextColor="#FFF5E1"
       />
       <TextInput
         style={styles.input}
         placeholder="Username"
         value={username}
         onChangeText={setUsername}
-        placeholderTextColor="#FFF5E1"
       />
       <TextInput
         style={styles.input}
         placeholder="Nome Completo"
         value={fullName}
         onChangeText={setFullName}
-        placeholderTextColor="#FFF5E1"
       />
       <TextInput
         style={styles.input}
         placeholder="Nome da ETEC"
         value={etecName}
         onChangeText={setEtecName}
-        placeholderTextColor="#FFF5E1"
       />
       <TextInput
         style={styles.input}
@@ -82,20 +100,18 @@ const App = ({ navigation }) => {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
-        placeholderTextColor="#FFF5E1"
       />
       <TextInput
         style={styles.input}
         placeholder="Curso"
         value={course}
         onChangeText={setCourse}
-        placeholderTextColor="#FFF5E1"
       />
       <View style={styles.containerButton}>
         <Text>Já tem conta? <Pressable onPress={() => navigation.navigate('Login')} style={styles.ancora}>Faça login.</Pressable></Text>
       </View>
       <View style={styles.buttonContainer}>
-        <Button title="Cadastrar" onPress={handleSignUp} color="#FFA07A" />
+        <Button title="Cadastrar" onPress={handleSignUp} color="#FF6E15" />
       </View>
     </View>
   );
@@ -104,33 +120,43 @@ const App = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFF5E1',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFF5E1",
     padding: 16,
+  },
+  divImage: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    width: 60,
+    height: 60,
   },
   title: {
     fontSize: 24,
     marginBottom: 16,
-    color: '#FFB347',
+    textAlign: "center",
+    flexDirection: "row",
+  },
+  welcome: {
+    color: "#000",
+  },
+  appName: {
+    color: "#FF6E15",
   },
   input: {
-    width: '80%',
+    width: "80%",
     height: 40,
-    borderColor: '#FFA07A',
+    borderColor: "#000",
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 12,
     paddingHorizontal: 8,
-    backgroundColor: '#FFCCBC',
-    color: '#333',
+    color: "#000",
   },
   buttonContainer: {
-    width: '80%',
+    width: "60%",
     borderRadius: 8,
-  },
-  ancora: {
-    backgroundColor: "white",
   },
 });
 
