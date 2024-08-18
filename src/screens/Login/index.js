@@ -1,33 +1,55 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, Alert } from 'react-native';
+import React, { useState } from "react";
+import {
+  View,
+  TextInput,
+  Button,
+  StyleSheet,
+  Text,
+  Alert,
+  Image,
+  Touchable,
+  Pressable,
+} from "react-native";
 
-const App = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+const App = ({ navigation }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSignUp = () => {
     if (!email || !password) {
-      Alert.alert('Por favor, preencha todos os campos.');
+      Alert.alert("Por favor, preencha todos os campos.");
       return;
     }
 
-    // Simulando o armazenamento dos dados localmente
     const userData = {
       email: email,
       password: password,
     };
 
-    Alert.alert('Usuário criado com sucesso!', JSON.stringify(userData));
-    
-    // Limpar campos após cadastro
-    setEmail('');
-    setPassword('');
+    Alert.alert("Usuário criado com sucesso!", JSON.stringify(userData));
+
+    setEmail("");
+    setPassword("");
   };
 
   return (
     <View style={styles.container}>
-      
-      <Text style={styles.title}>Bem Vindo(a) ao Laços</Text>
+      <Image
+        source={require("../../../assets/top-corner.png")}
+        style={styles.topCorner}
+      />
+      <Image
+        source={require("../../../assets/bottom-corner.png")}
+        style={styles.bottomCorner}
+      />
+      <Text style={styles.title}>
+        <Text style={styles.welcome}>Bem Vindo(a) ao</Text>
+        {" "}
+        <Text style={styles.appName}>Laços</Text>
+      </Text>
+
+      <Image style={styles.logo} source={require("../../../assets/logo.png")} />
+
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -43,6 +65,9 @@ const App = () => {
         secureTextEntry
         placeholderTextColor="#000"
       />
+      <View style={styles.containerButton}>
+        <Text>Não tem uma conta? Cadastre-se <Pressable onPress={() => navigation.navigate('Cadastro')} style={styles.ancora}>Aqui</Pressable></Text>
+      </View>
       <View style={styles.buttonContainer}>
         <Button title="Entrar" onPress={handleSignUp} color="#FF6E15" />
       </View>
@@ -58,9 +83,36 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF5E1",
     padding: 16,
   },
+
+  topCorner: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    width: 100,
+    height: 100,
+  },
+  bottomCorner: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    width: 100,
+    height: 100,
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    marginBottom: 16,
+  },
   title: {
     fontSize: 24,
     marginBottom: 16,
+    textAlign: "center",
+    flexDirection: "row",
+  },
+  welcome: {
+    color: "#000",
+  },
+  appName: {
     color: "#FF6E15",
   },
   input: {
@@ -77,6 +129,9 @@ const styles = StyleSheet.create({
     width: "80%",
     borderRadius: 10,
   },
+  ancora: {
+    backgroundColor: "white",
+  },
 });
 
-export default App;
+export default App;

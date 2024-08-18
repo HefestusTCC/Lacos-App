@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, Alert } from 'react-native';
-import {auth} from '@react-native-firebase/auth';
+import { View, TextInput, Button, StyleSheet, Text, Alert, Pressable } from 'react-native';
+import { auth } from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
-const App = () => {
+const App = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
@@ -91,6 +91,9 @@ const App = () => {
         onChangeText={setCourse}
         placeholderTextColor="#FFF5E1"
       />
+      <View style={styles.containerButton}>
+        <Text>Já tem conta? <Pressable onPress={() => navigation.navigate('Login')} style={styles.ancora}>Faça login.</Pressable></Text>
+      </View>
       <View style={styles.buttonContainer}>
         <Button title="Cadastrar" onPress={handleSignUp} color="#FFA07A" />
       </View>
@@ -126,6 +129,9 @@ const styles = StyleSheet.create({
     width: '80%',
     borderRadius: 8,
   },
+  ancora: {
+    backgroundColor: "white",
+  },
 });
 
-export default App;
+export default App;
