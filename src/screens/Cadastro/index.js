@@ -10,7 +10,7 @@ import {
   Pressable
 } from "react-native";
 import axios from "axios"; 
-import Login from '../screens/Login/index.js';
+
 
 const App = () => {
   const [email, setEmail] = useState("");
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFF5E1",
+    backgroundColor: "#FFFFFF",
     padding: 16,
   },
   divImage: {
@@ -155,6 +155,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: "60%",
     borderRadius: 8,
+    marginTop: 10,
   },
 });
 
