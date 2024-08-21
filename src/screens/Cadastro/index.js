@@ -9,8 +9,8 @@ import {
   Image,
   Pressable
 } from "react-native";
-import { auth } from "@react-native-firebase/auth";
-import firestore from "@react-native-firebase/firestore";
+import axios from "axios"; 
+import Login from '../screens/Login/index.js';
 
 const App = () => {
   const [email, setEmail] = useState("");
@@ -26,32 +26,32 @@ const App = () => {
       return;
     }
 
+    const createUserData = {
+      email: email,
+      username: username,
+      fullName: fullName,
+      etecName: etecName,
+      password: password,
+      course: course,
+    };
+
     try {
-      // Criar conta de usuário no Firebase Authentication
-      const userCredential = await auth().createUserWithEmailAndPassword(
-        email,
-        password
-      );
-      const userId = userCredential.user.uid;
+      
+      const response = await axios.post("https://suaapi.com/endpoint", createUserData);
 
-      // Salvar dados adicionais no Firestore
-      await firestore().collection("users").doc(userId).set({
-        email: email,
-        username: username,
-        fullName: fullName,
-        etecName: etecName,
-        course: course,
-      });
-
-      Alert.alert("Usuário criado com sucesso!");
-
-      // Limpar campos após cadastro
-      setEmail("");
-      setUsername("");
-      setFullName("");
-      setEtecName("");
-      setPassword("");
-      setCourse("");
+     
+      if (response.status === 200) {
+        Alert.alert("Usuário criado com sucesso!");
+        setEmail("");
+        setUsername("");
+        setFullName("");
+        setEtecName("");
+        setPassword("");
+        setCourse("");
+       navigation.navigate(Login);
+      } else {
+        Alert.alert("Erro ao criar usuário. Tente novamente.");
+      }
     } catch (error) {
       Alert.alert("Erro ao criar usuário:", error.message);
     }
@@ -59,12 +59,10 @@ const App = () => {
 
   return (
     <View style={styles.container}>
-      {/* Imagem no canto superior direito */}
       <Image
         source={require("../../../assets/logo.png")}
         style={styles.divImage}
       />
-
       <Text style={styles.title}>
         <Text style={styles.welcome}>Bem Vindo(a) ao</Text>{" "}
         <Text style={styles.appName}>Laços</Text>

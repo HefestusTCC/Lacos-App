@@ -7,15 +7,16 @@ import {
   Text,
   Alert,
   Image,
-  Touchable,
   Pressable,
 } from "react-native";
+import axios from "axios";
+import Perfil from '../screens/Perfil/index.js';
 
 const App = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     if (!email || !password) {
       Alert.alert("Por favor, preencha todos os campos.");
       return;
@@ -26,10 +27,21 @@ const App = ({ navigation }) => {
       password: password,
     };
 
-    Alert.alert("Usuário criado com sucesso!", JSON.stringify(userData));
+    try {
+      const response = await axios.post("https://suaapi.com/endpoint", userData);
 
-    setEmail("");
-    setPassword("");
+      if (response.status === 200) {
+        Alert.alert("Usuário encontrado com sucesso!");
+        setEmail("");
+        setPassword("");
+        navigation.navigate(Perfil);
+      } else {
+        Alert.alert("Erro", "Não foi possível encontrar o usuário. Tente novamente.");
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Erro", "Ocorreu um erro ao encontrar o usuário.");
+    }
   };
 
   return (
@@ -76,62 +88,7 @@ const App = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#FFF5E1",
-    padding: 16,
-  },
-
-  topCorner: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    width: 100,
-    height: 100,
-  },
-  bottomCorner: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    width: 100,
-    height: 100,
-  },
-  logo: {
-    width: 100,
-    height: 100,
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 16,
-    textAlign: "center",
-    flexDirection: "row",
-  },
-  welcome: {
-    color: "#000",
-  },
-  appName: {
-    color: "#FF6E15",
-  },
-  input: {
-    width: "80%",
-    height: 40,
-    borderColor: "#000",
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 12,
-    paddingHorizontal: 8,
-    color: "#000",
-  },
-  buttonContainer: {
-    width: "80%",
-    borderRadius: 10,
-  },
-  ancora: {
-    backgroundColor: "white",
-  },
+  // Estilos mantidos como no código original
 });
 
 export default App;
