@@ -1,33 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, Button, StyleSheet, Alert } from 'react-native';
-import auth from '@react-native-firebase/auth';
 
 const ProfileScreen = () => {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const currentUser = auth().currentUser;
-    setUser(currentUser);
-  }, []);
-
-  const handleEdit = () => {
-
-    Alert.alert("Edit Profile", "Here you can implement the edit profile functionality.");
-  };
-
-  const handleDeleteAccount = async () => {
-    try {
-      await auth().currentUser.delete();
-      Alert.alert("Account Deleted", "Your account has been deleted.");
-    } catch (error) {
-      Alert.alert("Error", "An error occurred while deleting your account.");
-    }
-  };
-
-  if (!user) {
-    return <Text>Loading...</Text>;
-  }
-
   return (
     <View style={styles.container}>
       <Image

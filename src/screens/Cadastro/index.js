@@ -12,7 +12,7 @@ import {
 import axios from "axios"; 
 
 
-const App = () => {
+const App = ({navigation}) => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
@@ -27,19 +27,19 @@ const App = () => {
     }
 
     const createUserData = {
-      email: email,
+      name: fullName,
       username: username,
-      fullName: fullName,
-      etecName: etecName,
+      email: email,
       password: password,
+      school: etecName,
       course: course,
+      bornedAt: "2006-06-09"
     };
 
     try {
       
-      const response = await axios.post("https://suaapi.com/endpoint", createUserData);
-
-     
+      const response = await axios.post("http://localhost:8080/users/register", createUserData);
+      console.log(response.data);
       if (response.status === 200) {
         Alert.alert("Usuário criado com sucesso!");
         setEmail("");
@@ -48,7 +48,7 @@ const App = () => {
         setEtecName("");
         setPassword("");
         setCourse("");
-       navigation.navigate(Login);
+        navigation.navigate('Login');
       } else {
         Alert.alert("Erro ao criar usuário. Tente novamente.");
       }

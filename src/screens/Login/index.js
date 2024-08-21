@@ -14,26 +14,23 @@ import axios from "axios";
 const App = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const handleSignUp = async () => {
     if (!email || !password) {
       Alert.alert("Por favor, preencha todos os campos.");
       return;
     }
-
     const userData = {
       email: email,
       password: password,
     };
-
     try {
-      const response = await axios.post("https://suaapi.com/endpoint", userData);
-
+      const response = await axios.post("http://localhost:8080/users/login", userData);
+      console.log(response);
       if (response.status === 200) {
         Alert.alert("Usuário encontrado com sucesso!");
         setEmail("");
         setPassword("");
-        navigation.navigate(Perfil);
+        navigation.navigate('Perfil');
       } else {
         Alert.alert("Erro", "Não foi possível encontrar o usuário. Tente novamente.");
       }
@@ -142,7 +139,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   ancora: {
-   
+
   },
   // Estilos mantidos como no código original
 });
