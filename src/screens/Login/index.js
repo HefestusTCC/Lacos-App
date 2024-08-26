@@ -10,7 +10,8 @@ import {
   Pressable,
 } from "react-native";
 import axios from "axios";
-
+import * as SecureStore from 'expo-secure-store';
+import SERVER_IP from "../../config/serverConfig";
 const App = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,19 +25,22 @@ const App = ({ navigation }) => {
       password: password,
     };
     try {
-      const response = await axios.post("http://localhost:8080/users/login", userData);
-      console.log(response);
+      const response = await axios.post(`${SERVER_IP}/users/login`, userData);
+      //console.log(response);
       if (response.status === 200) {
         Alert.alert("Usuário encontrado com sucesso!");
         setEmail("");
         setPassword("");
+        SecureStore.setItem("jwt_token", response.data.accessToken);
+        SecureStore.setItem("expiration", response.data.expiresIn.toString());
+        SecureStore.setItem("user", JSON.stringify(response.data.user));
         navigation.navigate('Perfil');
       } else {
-        Alert.alert("Erro", "Não foi possível encontrar o usuário. Tente novamente.");
+        Alert.alert("Erro", "O e-mail ou senha informados estão incorretos.");
       }
     } catch (error) {
       console.error(error);
-      Alert.alert("Erro", "Ocorreu um erro ao encontrar o usuário.");
+      Alert.alert("Erro", "O servidor está fora do ar. Tente novamente mais tarde.");
     }
   };
 
@@ -74,7 +78,7 @@ const App = ({ navigation }) => {
         placeholderTextColor="#000"
       />
       <View style={styles.containerButton}>
-        <Text>Não tem uma conta? <Pressable onPress={() => navigation.navigate('Cadastro')} style={styles.ancora}>Cadastre-se Aqui.</Pressable></Text>
+        <Text>Não tem uma conta? <Pressable onPress={() => navigation.navigate('Cadastro')} style={styles.ancora}><Text>Cadastre-se Aqui.</Text></Pressable></Text>
       </View>
       <View style={styles.buttonContainer}>
         <Button title="Entrar" onPress={handleSignUp} color="#FF6E15" />

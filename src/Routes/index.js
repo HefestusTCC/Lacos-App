@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Login from '../screens/Login/index.js';
 import Cadastro from '../screens/Cadastro/index.js';
 import Perfil from '../screens/Perfil/index.js';
+import Editar from '../screens/Editar/index.js';
 export default function App() {
     const stack = createStackNavigator();
     return (
@@ -17,6 +18,7 @@ export default function App() {
                         headerShown: false
                     }}
                 ></stack.Screen>
+
                 <stack.Screen
                     name="Cadastro"
                     component={Cadastro}
@@ -28,6 +30,14 @@ export default function App() {
                 <stack.Screen
                     name="Perfil"
                     component={Perfil}
+                    options={{
+                        title: '',
+                        headerShown: false
+                    }}
+                ></stack.Screen>
+                <stack.Screen
+                    name="Editar"
+                    component={Editar}
                     options={{
                         title: '',
                         headerShown: false

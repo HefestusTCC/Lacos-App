@@ -33,14 +33,15 @@ const App = ({navigation}) => {
       password: password,
       school: etecName,
       course: course,
-      bornedAt: "2006-06-09"
+      birthDate: "2006-06-09",
+      preferences: ["Tecnologia"]
     };
 
     try {
       
-      const response = await axios.post("http://localhost:8080/users/register", createUserData);
+      const response = await axios.post("http://179.63.113.7:8080/users/register", createUserData);
       console.log(response.data);
-      if (response.status === 200) {
+      if (response.status === 201) {
         Alert.alert("Usuário criado com sucesso!");
         setEmail("");
         setUsername("");
@@ -106,7 +107,7 @@ const App = ({navigation}) => {
         onChangeText={setCourse}
       />
       <View style={styles.containerButton}>
-        <Text>Já tem conta? <Pressable onPress={() => navigation.navigate('Login')} style={styles.ancora}>Faça login.</Pressable></Text>
+        <Text>Já tem conta? <Pressable onPress={() => navigation.navigate('Login')} style={styles.ancora}><Text>Faça login.</Text></Pressable></Text>
       </View>
       <View style={styles.buttonContainer}>
         <Button title="Cadastrar" onPress={handleSignUp} color="#FF6E15" />
