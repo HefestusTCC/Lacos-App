@@ -28,7 +28,6 @@ const App = ({ navigation }) => {
       const response = await axios.post(`${SERVER_IP}/users/login`, userData);
       //console.log(response);
       if (response.status === 200) {
-        Alert.alert("Usuário encontrado com sucesso!");
         setEmail("");
         setPassword("");
         SecureStore.setItem("jwt_token", response.data.accessToken);
@@ -39,8 +38,7 @@ const App = ({ navigation }) => {
         Alert.alert("Erro", "O e-mail ou senha informados estão incorretos.");
       }
     } catch (error) {
-      console.error(error);
-      Alert.alert("Erro", "O servidor está fora do ar. Tente novamente mais tarde.");
+      Alert.alert("Erro de credencial", "O e-mail ou senha informados estão incorretos.");
     }
   };
 

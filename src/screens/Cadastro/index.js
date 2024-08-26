@@ -10,6 +10,7 @@ import {
   Pressable
 } from "react-native";
 import axios from "axios"; 
+import SERVER_IP from "../../config/serverConfig";
 
 
 const App = ({navigation}) => {
@@ -38,8 +39,7 @@ const App = ({navigation}) => {
     };
 
     try {
-      
-      const response = await axios.post("http://179.63.113.7:8080/users/register", createUserData);
+      const response = await axios.post(`${SERVER_IP}/users/register`, createUserData);
       console.log(response.data);
       if (response.status === 201) {
         Alert.alert("Usuário criado com sucesso!");
