@@ -31,7 +31,6 @@ const ProfileScreen = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
-      console.log("atualizandoooo");
       loadUserData();
     }, [navigation])
   );

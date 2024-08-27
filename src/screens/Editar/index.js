@@ -26,7 +26,6 @@ const EditScreen = ({ navigation }) => {
       const response = await api.put('/users/profile', userData);
       if (response.status === 200) {
         SecureStore.setItem("user", JSON.stringify(response.data));
-        console.log(SecureStore.getItem("user"));
         Alert.alert("Usuário editado com sucesso!");
         navigation.navigate('Perfil');
       }
@@ -104,7 +103,7 @@ const EditScreen = ({ navigation }) => {
 
         <View style={styles.buttonContainer}>
           <Button title="Atualizar" onPress={updateProfile} color="#89e88f" />
-          <Button title="Cancelar" onPress={() => navigation.navigate()} color="#FF0000" />
+          <Button title="Cancelar" onPress={() => navigation.navigate('Perfil')} color="#FF0000" />
         </View>
       </View>
     </ScrollView>
