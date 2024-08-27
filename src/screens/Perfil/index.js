@@ -1,26 +1,43 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, Image, ScrollView, Pressable, StyleSheet, Alert } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import { useFocusEffect } from '@react-navigation/native';
 const ProfileScreen = ({ navigation }) => {
-  const storedUser = JSON.parse(SecureStore.getItem("user"));
-  const [user] = useState({
-    profilePictureUrl: 'https://static.vecteezy.com/system/resources/thumbnails/005/129/844/small_2x/profile-user-icon-isolated-on-white-background-eps10-free-vector.jpg',
+  const jsonString = SecureStore.getItem("user");
+  const storedUser = JSON.parse(jsonString);
+  const [user, setUser] = useState({
     photoFundo: 'https://cdn.leroymerlin.com.br/products/revestimento_para_piscina_brilhante_azul_laguna_15x15cm_86951711_0001_600x600.jpg',
     editar: 'https://cdn-icons-png.flaticon.com/512/1159/1159970.png',
-    name: storedUser.name,
-    username: storedUser.userName,
-    email: storedUser.email,
-    course: storedUser.course,
     textPublication: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sapien eros, placerat ut aliquet eget, condimentum a dolor. Cras sed tempus lectus. Duis et massa at magna lobortis sollicitudin. Donec felis orci, elementum sit amet tristique vel, accumsan placerat enim. Sed maximus enim et tellus scelerisque, vitae porta est rhoncus.',
   });
 
-  const handleEdit = () => {
-    Alert.alert("Edit Profile", "Aqui você pode implementar a funcionalidade de edição de perfil.");
+  const loadUserData = async () => {
+    try {
+      const jsonString = await SecureStore.getItemAsync('user');
+      const storedUser = JSON.parse(jsonString);
+      if (storedUser) {
+        setUser({
+          ...user,
+          profilePictureURL: storedUser.profilePictureURL,
+          name: storedUser.name,
+          course: storedUser.course,
+          username: storedUser.username,
+        });
+      }
+    } catch (error) {
+      Alert.alert('Erro ao carregar dados: ' + error.message);
+    }
   };
 
+  useFocusEffect(
+    useCallback(() => {
+      console.log("atualizandoooo");
+      loadUserData();
+    }, [navigation])
+  );
   return (
     <ScrollView contentContainerStyle={styles.container}>
-       <Pressable onPress={() => navigation.navigate('Login')}>
+      <Pressable onPress={() => navigation.navigate('Login')}>
         <Image
           source={require("../../../assets/voltar.png")}
           style={styles.voltar}
@@ -32,7 +49,7 @@ const ProfileScreen = ({ navigation }) => {
       />
 
       <Image
-        source={{ uri: user.profilePictureUrl }}
+        source={{ uri: user.profilePictureURL }}
         style={styles.profileImage}
       />
 
@@ -52,13 +69,13 @@ const ProfileScreen = ({ navigation }) => {
 
       {[...Array(5)].map((_, index) => (
         <View key={index} style={styles.card}>
-          <Image source={{ uri: user.photoURL }} style={styles.profileImagPublic} />
-          <Text style={styles.namePublic}>{user.displayName}</Text>
+          <Image source={{ uri: user.profilePictureURL }} style={styles.profileImagPublic} />
+          <Text style={styles.namePublic}>{user.name}</Text>
           <Text style={styles.username}>{user.username}</Text>
           <Text style={styles.textPublication}>{user.textPublication}</Text>
         </View>
       ))}
-      
+
     </ScrollView>
   );
 };
@@ -76,7 +93,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     backgroundColor: 'black',
   },
-  voltar: {  
+  voltar: {
     position: "absolute",
     top: 16,
     left: 16,
@@ -114,7 +131,7 @@ const styles = StyleSheet.create({
     height: 140,
     borderRadius: 70,
     marginBottom: 20,
-    backgroundColor: 'black',
+
   },
   editar: {
     width: 40,

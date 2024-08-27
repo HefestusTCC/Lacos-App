@@ -1,38 +1,42 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Image, StyleSheet, Pressable, Alert } from 'react-native';
+import { View, Text, TextInput, Image, StyleSheet, Pressable, Alert, ScrollView, Button } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import api from '../../config/api.js';
 
 const EditScreen = ({ navigation }) => {
-  const storedUser = JSON.parse(SecureStore.getItem("user"));
+  const jsonString = SecureStore.getItem("user");
+  const storedUser = JSON.parse(jsonString);
+  const [userData, setUserData] = useState({
+    name: storedUser.name,
+    profilePictureUrl: storedUser.profilePictureURL,
+    bio: storedUser.bio,
+    school: storedUser.school,
+    course: storedUser.course
+  });
   
-  setName(storedUser.name);
-  setProfilePictureUrl(storedUser.profilePictureUrl);
-  setBio(storedUser.bio);
-  setSchool(storedUser.school);
-  setCourse(storedUser.course);
-  const userData = {
-    name: name,
-    profilePictureUrl: profilePictureUrl,
-    bio: bio,
-    school: school,
-    course: course
-  }
+  const handleInputChange = (field, value) => {
+    setUserData(prevState => ({
+      ...prevState,
+      [field]: value
+    }));
+  };
+
   const updateProfile = async () => {
-    try{
-      const response = await api.put('/profile', userData);
+    try {
+      const response = await api.put('/users/profile', userData);
       if (response.status === 200) {
         SecureStore.setItem("user", JSON.stringify(response.data));
+        console.log(SecureStore.getItem("user"));
         Alert.alert("Usuário editado com sucesso!");
         navigation.navigate('Perfil');
       }
-    } catch (error){
+    } catch (error) {
       Alert.alert("Erro: " + error.message);
     }
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Pressable onPress={() => navigation.navigate('Perfil')}>
         <Image
           source={require("../../../assets/voltar.png")}
@@ -45,8 +49,9 @@ const EditScreen = ({ navigation }) => {
         source={{ uri: 'https://cdn.leroymerlin.com.br/products/revestimento_para_piscina_brilhante_azul_laguna_15x15cm_86951711_0001_600x600.jpg' }}
         style={styles.profileFundo}
       />
+
       <Image
-        source={{ uri: storedUser.profilePictureUrl }}
+        source={{ uri: storedUser.profilePictureURL }}
         style={styles.profileImage}
       />
 
@@ -55,62 +60,54 @@ const EditScreen = ({ navigation }) => {
         style={styles.divImage}
       />
 
-      <Pressable style={styles.photoEdit} onPress={() => navigation.navigate('Editar')}>
-        <Image
-
-        />
-      </Pressable>
-
       <View style={styles.card}>
         <Text style={styles.titles}>Nome:</Text>
         <TextInput
           style={styles.input}
           placeholder=""
-          value={name}
-          onChangeText={setName}
+          value={userData.name}
+          onChangeText={(text) => handleInputChange('name', text)}
           placeholderTextColor="#000"
         />
         <Text style={styles.titles}>Url da foto de perfil:</Text>
         <TextInput
           style={styles.input}
           placeholder=""
-          value={profilePictureUrl}
-          onChangeText={setProfilePictureUrl}
+          value={userData.profilePictureUrl}
+          onChangeText={(text) => handleInputChange('profilePictureUrl', text)}
           placeholderTextColor="#000"
         />
         <Text style={styles.titles}>Biografia:</Text>
         <TextInput
           style={styles.input}
           placeholder=""
-          value={bio}
-          onChangeText={setBio}
+          value={userData.bio}
+          onChangeText={(text) => handleInputChange('bio', text)}
           placeholderTextColor="#000"
         />
         <Text style={styles.titles}>Escola:</Text>
         <TextInput
           style={styles.input}
           placeholder=""
-          value={school}
-          onChangeText={setSchool}
+          value={userData.school}
+          onChangeText={(text) => handleInputChange('school', text)}
           placeholderTextColor="#000"
         />
         <Text style={styles.titles}>Curso:</Text>
         <TextInput
           style={styles.input}
           placeholder=""
-          value={course}
-          onChangeText={setCourse}
+          value={userData.course}
+          onChangeText={(text) => handleInputChange('course', text)}
           placeholderTextColor="#000"
         />
 
-        <View style={styles.containerButton}>
-
-          <Pressable onPress={updateProfile} style={styles.ancora}><Text>Enviar</Text></Pressable>
-
-
+        <View style={styles.buttonContainer}>
+          <Button title="Atualizar" onPress={updateProfile} color="#89e88f" />
+          <Button title="Cancelar" onPress={() => navigation.navigate()} color="#FF0000" />
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -118,7 +115,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    padding: 16,
+    padding: 0,
   },
   profileFundo: {
     position: 'absolute',
@@ -134,7 +131,7 @@ const styles = StyleSheet.create({
   },
   photoEdit: {
     position: 'absolute',
-    top: 350,
+    top: 300,
     left: 130,
     width: 50,
     height: 40,
@@ -151,7 +148,7 @@ const styles = StyleSheet.create({
   },
   profileImage: {
     position: 'absolute',
-    top: 280,
+    top: 240,
     left: 20,
     width: 140,
     height: 140,
@@ -162,9 +159,7 @@ const styles = StyleSheet.create({
   card: {
     padding: 20,
     marginTop: 400,
-    width: '90%',
-    height: 'auto',
-    position: 'relative',
+    width: '100%',
   },
   divImage: {
     position: "absolute",
@@ -193,6 +188,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 12,
     paddingLeft: 8,
+  },
+  buttonContainer: {
+    width: "100%",
+    borderRadius: 10,
+    marginTop: 10,
+    height: 50,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around'
   },
 });
 
