@@ -111,10 +111,13 @@ const EditScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    padding: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    padding: 16,
   },
   profileFundo: {
     position: 'absolute',
@@ -130,7 +133,7 @@ const styles = StyleSheet.create({
   },
   photoEdit: {
     position: 'absolute',
-    top: 300,
+    top: 350,
     left: 130,
     width: 50,
     height: 40,
@@ -139,15 +142,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'gray',
   },
   voltar: {
-    position: "absolute",
-    top: 16,
-    left: 16,
-    width: 35,
-    height: 35,
+    width: "80%",
+    borderRadius: 10,
+    marginTop: 10,
   },
   profileImage: {
     position: 'absolute',
-    top: 240,
+    top: 280,
     left: 20,
     width: 140,
     height: 140,
@@ -158,7 +159,9 @@ const styles = StyleSheet.create({
   card: {
     padding: 20,
     marginTop: 400,
-    width: '100%',
+    width: '90%',
+    height: 'auto',
+    position: 'relative',
   },
   divImage: {
     position: "absolute",
@@ -174,12 +177,14 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   input: {
+    width: "80%",
     height: 40,
-    borderColor: '#000',
+    borderColor: "#000",
     borderWidth: 1,
+    borderRadius: 8,
     marginBottom: 12,
-    paddingLeft: 8,
-    fontSize: 15,
+    paddingHorizontal: 8,
+    color: "#000",
   },
   inputDes: {
     height: 80,
@@ -187,15 +192,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 12,
     paddingLeft: 8,
-  },
-  buttonContainer: {
-    width: "100%",
-    borderRadius: 10,
-    marginTop: 10,
-    height: 50,
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-around'
   },
 });
 
