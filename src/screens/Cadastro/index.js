@@ -29,11 +29,35 @@ const App = ({ navigation }) => {
   };
 
   let etecs = {
-    "Etec Cidade Tiradentes": {
-      cursos: ["Administração", "Maconha"]
+    "Etec da Zona Leste (Cidade A. E. Carvalho)": {
+      cursos: ["Administração", "Contabilidade", "Desenvolvimento de Sistemas", "Logística" , "Serviços Jurídicos"]
     },
-    "ETEC A.E Carvalho": {
-      cursos: ["Maconha", "Beck bolado"]
+    "Etec de Cidade Tiradentes (Cidade Tiradentes)": {
+      cursos: ["Administração", "Farmácia", "Nutrição e Dietética", "Química", "Segurança do Trabalho"]
+    },
+    "Etec de Guarulhos": {
+      cursos: ["Administração", "Desenvolvimento de Sistemas"]
+    },
+    "Etec de Guaianazes (Guaianazes)": {
+      cursos: ["Administração", "Desenvolvimento de Sistemas","Edificações","Eletrônica","Eletrotécnica","Nutrição e Dietética",]
+    },
+    "Etec de Itaquera (Cohab 2)": {
+      cursos: ["Administração", "Contabilidade","Desenvolvimento de Sistemas","Informática"]
+    },
+    "Etec de Suzano": {
+      cursos: ["Administração", "Comércio Exterior","Contabilidade","Enfermagem","Eventos","Química","Secretariado"]
+    },
+    "Etec de Tiquatira (Penha)": {
+      cursos: ["Administração", "Design Gráfico","Modelagem do Vestuário","Química"]
+    },
+    "Etec Itaquera II (Itaquera)": {
+      cursos: ["Administração", "Desenho de Construção Civil","Design de Interiores","Edificações","Transações Imobiliárias"]
+    },
+    "Etec Prof. Aprígio Gonzaga (Penha)": {
+      cursos: ["Administração", "Agenciamento de Viagem","Comércio Exterior","Eletromecânica","Eletrônica","Guia de Turismo","Secretariado","Segurança do Trabalho","Turismo Receptivo"]
+    },
+    "Etec São Mateus (São Mateus)": {
+      cursos: ["Administração", "Eletrônica","Nutrição e Dietética","Segurança do Trabalho"]
     }
   };
 
