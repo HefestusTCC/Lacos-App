@@ -43,67 +43,66 @@ const EditScreen = ({ navigation }) => {
         />
       </Pressable>
 
-      <Text style={styles.Publication}>Seu Perfil:</Text>
-      <Image
-        source={{ uri: 'https://cdn.leroymerlin.com.br/products/revestimento_para_piscina_brilhante_azul_laguna_15x15cm_86951711_0001_600x600.jpg' }}
-        style={styles.profileFundo}
-      />
+      <Text style={styles.header}>Editar Perfil</Text>
 
-      <Image
-        source={{ uri: storedUser.profilePictureURL }}
-        style={styles.profileImage}
-      />
-
-      <Image
-        source={require("../../../assets/logo.png")}
-        style={styles.divImage}
-      />
+      <View style={styles.profileContainer}>
+        <Image
+          source={{ uri: userData.profilePictureUrl }}
+          style={styles.profileImage}
+        />
+        <Pressable onPress={() => Alert.alert("Alterar foto")}>
+          <Text style={styles.changePhotoText}>Alterar foto de perfil</Text>
+        </Pressable>
+      </View>
 
       <View style={styles.card}>
-        <Text style={styles.titles}>Nome:</Text>
+        <Text style={styles.label}>Nome:</Text>
         <TextInput
           style={styles.input}
-          placeholder=""
           value={userData.name}
           onChangeText={(text) => handleInputChange('name', text)}
-          placeholderTextColor="#000"
+          placeholderTextColor="#FF6E15"
         />
-        <Text style={styles.titles}>Url da foto de perfil:</Text>
+
+        <Text style={styles.label}>Url da foto de perfil:</Text>
         <TextInput
           style={styles.input}
-          placeholder=""
           value={userData.profilePictureUrl}
           onChangeText={(text) => handleInputChange('profilePictureUrl', text)}
-          placeholderTextColor="#000"
+          placeholderTextColor="#FF6E15"
         />
-        <Text style={styles.titles}>Biografia:</Text>
+
+        <Text style={styles.label}>Biografia:</Text>
         <TextInput
           style={styles.input}
-          placeholder=""
           value={userData.bio}
           onChangeText={(text) => handleInputChange('bio', text)}
-          placeholderTextColor="#000"
+          placeholderTextColor="#FF6E15"
         />
-        <Text style={styles.titles}>Escola:</Text>
+
+        <Text style={styles.label}>Escola:</Text>
         <TextInput
           style={styles.input}
-          placeholder=""
           value={userData.school}
           onChangeText={(text) => handleInputChange('school', text)}
-          placeholderTextColor="#000"
+          placeholderTextColor="#FF6E15"
         />
-        <Text style={styles.titles}>Curso:</Text>
+
+        <Text style={styles.label}>Curso:</Text>
         <TextInput
           style={styles.input}
-          placeholder=""
           value={userData.course}
           onChangeText={(text) => handleInputChange('course', text)}
-          placeholderTextColor="#000"
+          placeholderTextColor="#FF6E15"
         />
 
         <View style={styles.buttonContainer}>
-          <Button title="Atualizar" onPress={updateProfile} color="#89e88f" />
-          <Button title="Cancelar" onPress={() => navigation.navigate('Perfil')} color="#FF0000" />
+          <Pressable style={styles.saveButton} onPress={updateProfile}>
+            <Text style={styles.saveButtonText}>Salvar</Text>
+          </Pressable>
+          <Pressable style={styles.cancelButton} onPress={() => navigation.navigate('Perfil')}>
+            <Text style={styles.cancelButtonText}>Cancelar</Text>
+          </Pressable>
         </View>
       </View>
     </ScrollView>
@@ -111,87 +110,77 @@ const EditScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    padding: 16,
-  },
-  profileFundo: {
-    position: 'absolute',
-    top: 150,
-    left: 5,
-    width: '97%',
-    height: 200,
-    borderRadius: 30,
-    marginBottom: 20,
-  },
-  titles: {
-    fontSize: 20,
-  },
-  photoEdit: {
-    position: 'absolute',
-    top: 350,
-    left: 130,
-    width: 50,
-    height: 40,
-    borderRadius: 10,
-    marginBottom: 20,
-    backgroundColor: 'gray',
+    backgroundColor: "#FFF5E1",
   },
   voltar: {
-    width: "80%",
-    borderRadius: 10,
     marginTop: 10,
+    marginLeft: 10,
+    width: 30,
+    height: 30,
+  },
+  header: {
+    fontSize: 24,
+    textAlign: 'center',
+    marginTop: 20,
+    color: "#FF6E15",
+  },
+  profileContainer: {
+    alignItems: 'center',
+    marginTop: 20,
   },
   profileImage: {
-    position: 'absolute',
-    top: 280,
-    left: 20,
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    marginBottom: 20,
-    backgroundColor: 'black',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderColor: '#FF6E15',
+    borderWidth: 2,
+  },
+  changePhotoText: {
+    color: '#FF6E15',
+    marginTop: 10,
   },
   card: {
     padding: 20,
-    marginTop: 400,
-    width: '90%',
-    height: 'auto',
-    position: 'relative',
+    marginTop: 20,
   },
-  divImage: {
-    position: "absolute",
-    top: 16,
-    right: 16,
-    width: 60,
-    height: 60,
-  },
-  Publication: {
-    position: 'absolute',
-    top: 110,
-    left: 16,
-    fontSize: 20,
+  label: {
+    fontSize: 18,
+    marginBottom: 10,
+    color: "#FF6E15",
   },
   input: {
-    width: "80%",
-    height: 40,
-    borderColor: "#000",
+    borderColor: "#FF6E15",
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 12,
-    paddingHorizontal: 8,
+    padding: 10,
+    fontSize: 16,
     color: "#000",
   },
-  inputDes: {
-    height: 80,
-    borderColor: '#000',
-    borderWidth: 1,
-    marginBottom: 12,
-    paddingLeft: 8,
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 20,
+  },
+  saveButton: {
+    backgroundColor: "#FF6E15",
+    padding: 10,
+    borderRadius: 8,
+  },
+  saveButtonText: {
+    color: "#FFF",
+    fontSize: 18,
+  },
+  cancelButton: {
+    backgroundColor: "#FF0000",
+    padding: 10,
+    borderRadius: 8,
+  },
+  cancelButtonText: {
+    color: "#FFF",
+    fontSize: 18,
   },
 });
 
