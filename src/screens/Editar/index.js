@@ -1,19 +1,54 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Image, StyleSheet, Pressable, Alert, ScrollView, Button } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import * as SecureStore from 'expo-secure-store';
 import api from '../../config/api.js';
 
 const EditScreen = ({ navigation }) => {
   const jsonString = SecureStore.getItem("user");
   const storedUser = JSON.parse(jsonString);
+  const etecs = {
+    "Etec da Zona Leste (Cidade A. E. Carvalho)": {
+      cursos: ["Nenhuma", "Administração", "Contabilidade", "Desenvolvimento de Sistemas", "Logística", "Serviços Jurídicos"]
+    },
+    "Etec de Cidade Tiradentes (Cidade Tiradentes)": {
+      cursos: ["Nenhuma", "Administração", "Farmácia", "Nutrição e Dietética", "Química", "Segurança do Trabalho", "Desenvolvimento de Sistemas"]
+    },
+    "Etec de Guarulhos": {
+      cursos: ["Nenhuma", "Administração", "Desenvolvimento de Sistemas"]
+    },
+    "Etec de Guaianazes (Guaianazes)": {
+      cursos: ["Nenhuma", "Administração", "Desenvolvimento de Sistemas", "Edificações", "Eletrônica", "Eletrotécnica", "Nutrição e Dietética",]
+    },
+    "Etec de Itaquera (Cohab 2)": {
+      cursos: ["Nenhuma", "Administração", "Contabilidade", "Desenvolvimento de Sistemas", "Informática"]
+    },
+    "Etec de Suzano": {
+      cursos: ["Nenhuma", "Administração", "Comércio Exterior", "Contabilidade", "Enfermagem", "Eventos", "Química", "Secretariado"]
+    },
+    "Etec de Tiquatira (Penha)": {
+      cursos: ["Nenhuma", "Administração", "Design Gráfico", "Modelagem do Vestuário", "Química"]
+    },
+    "Etec Itaquera II (Itaquera)": {
+      cursos: ["Nenhuma", "Administração", "Desenho de Construção Civil", "Design de Interiores", "Edificações", "Transações Imobiliárias"]
+    },
+    "Etec Prof. Aprígio Gonzaga (Penha)": {
+      cursos: ["Nenhuma", "Administração", "Agenciamento de Viagem", "Comércio Exterior", "Eletromecânica", "Eletrônica", "Guia de Turismo", "Secretariado", "Segurança do Trabalho", "Turismo Receptivo"]
+    },
+    "Etec São Mateus (São Mateus)": {
+      cursos: ["Nenhuma", "Administração", "Eletrônica", "Nutrição e Dietética", "Segurança do Trabalho"]
+    }
+  };
   const [userData, setUserData] = useState({
     name: storedUser.name,
     profilePictureUrl: storedUser.profilePictureURL,
+    backgroundPictureUrl: storedUser.backgroundPictureURL,
     bio: storedUser.bio,
     school: storedUser.school,
     course: storedUser.course
   });
-  
+  const [cursos, setCursos] = useState(etecs[storedUser.school]?.cursos || []);
+
   const handleInputChange = (field, value) => {
     setUserData(prevState => ({
       ...prevState,
@@ -21,9 +56,26 @@ const EditScreen = ({ navigation }) => {
     }));
   };
 
+  const handleEtecChange = (etec) => {
+    handleInputChange('school', etec);
+    setCursos(etecs[etec]?.cursos || []);
+    handleInputChange('course', '');
+  };
+
+  const allInputsOk = async () => {
+    if (!userData.name || !userData.profilePictureUrl || !userData.backgroundPictureUrl || !userData.school || userData.school == "Nenhuma" || userData.course == "Nenhuma" || !userData.course) {
+      Alert.alert("Por favor, preencha todos os campos.");
+      return false;
+    }
+    return true;
+  }
+
   const updateProfile = async () => {
+    if (!allInputsOk()){
+      return;
+    }
     try {
-      const response = await api.put('/users/profile', userData);
+      const response = await api.put('/users/profile/me', userData);
       if (response.status === 200) {
         SecureStore.setItem("user", JSON.stringify(response.data));
         Alert.alert("Usuário editado com sucesso!");
@@ -72,6 +124,14 @@ const EditScreen = ({ navigation }) => {
           placeholderTextColor="#FF6E15"
         />
 
+        <Text style={styles.label}>Url da foto de fundo:</Text>
+        <TextInput
+          style={styles.input}
+          value={userData.backgroundPictureUrl}
+          onChangeText={(text) => handleInputChange('backgroundPictureUrl', text)}
+          placeholderTextColor="#FF6E15"
+        />
+
         <Text style={styles.label}>Biografia:</Text>
         <TextInput
           style={styles.input}
@@ -80,22 +140,40 @@ const EditScreen = ({ navigation }) => {
           placeholderTextColor="#FF6E15"
         />
 
-        <Text style={styles.label}>Escola:</Text>
-        <TextInput
-          style={styles.input}
-          value={userData.school}
-          onChangeText={(text) => handleInputChange('school', text)}
-          placeholderTextColor="#FF6E15"
-        />
+        <View>
+          {/* Picker de Escolas */}
+          <Text style={styles.label}>Escola:</Text>
+          <View style={styles.inputPicker}>
+            <Picker
+              selectedValue={userData.school}
+              onValueChange={(itemValue) => handleEtecChange(itemValue)}
+            >
+              <Picker.Item label="Nenhuma" value="Nenhuma" />
+              {Object.keys(etecs).map((etec) => (
+                <Picker.Item key={etec} label={etec} value={etec} style={styles.pickerItem} />
+              ))}
+            </Picker>
+          </View>
 
-        <Text style={styles.label}>Curso:</Text>
-        <TextInput
-          style={styles.input}
-          value={userData.course}
-          onChangeText={(text) => handleInputChange('course', text)}
-          placeholderTextColor="#FF6E15"
-        />
-
+          {/* Picker de Cursos */}
+          {userData.school !== "Nenhuma" ? (
+            <>
+              <Text style={styles.label}>Curso:</Text>
+              <View style={styles.inputPicker}>
+                <Picker
+                  selectedValue={userData.course}
+                  onValueChange={(itemValue) => handleInputChange("course", itemValue)}
+                >
+                  {cursos.map((curso, index) => (
+                    <Picker.Item key={index} label={curso} value={curso} style={styles.pickerItem} />
+                  ))}
+                </Picker>
+              </View>
+            </>
+          ) : (
+            null
+          )}
+        </View>
         <View style={styles.buttonContainer}>
           <Pressable style={styles.saveButton} onPress={updateProfile}>
             <Text style={styles.saveButtonText}>Salvar</Text>
@@ -112,11 +190,7 @@ const EditScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-<<<<<<< HEAD
     backgroundColor: "#FFFFFF",
-=======
-    backgroundColor: "#FFF5E1",
->>>>>>> e00755f544c72885c7eaeabb888729e3e5961474
   },
   voltar: {
     marginTop: 10,
@@ -163,6 +237,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#000",
   },
+  inputPicker: {
+    borderColor: "#FF6E15",
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 12,
+    fontSize: 16,
+    color: "#000",
+  },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -170,27 +252,6 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     backgroundColor: "#FF6E15",
-<<<<<<< HEAD
-    borderRadius: 10,
-    marginTop: 10,
-    marginBottom: 10,
-    fontSize: 18,
-  },
-  saveButtonText: {
-    color: "#FFFFFF",
-    fontSize: 18,
-  },
-  cancelButton: {
-    backgroundColor: "#e0e0e0",
-    borderRadius: 10,
-    marginTop: 10,
-    marginBottom: 10,
-    fontSize: 18,
-    borderColor: '#FF6E15'
-  },
-  cancelButtonText: {
-    color: "#FFFFFF",
-=======
     padding: 10,
     borderRadius: 8,
   },
@@ -205,7 +266,6 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     color: "#FFF",
->>>>>>> e00755f544c72885c7eaeabb888729e3e5961474
     fontSize: 18,
   },
 });

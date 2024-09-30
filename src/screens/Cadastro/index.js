@@ -36,7 +36,7 @@ const App = ({ navigation }) => {
       cursos: ["Nenhuma", "Administração", "Contabilidade", "Desenvolvimento de Sistemas", "Logística", "Serviços Jurídicos"]
     },
     "Etec de Cidade Tiradentes (Cidade Tiradentes)": {
-      cursos: ["Nenhuma", "Administração", "Farmácia", "Nutrição e Dietética", "Química", "Segurança do Trabalho"]
+      cursos: ["Nenhuma", "Administração", "Farmácia", "Nutrição e Dietética", "Química", "Segurança do Trabalho", "Desenvolvimento de Sistemas"]
     },
     "Etec de Guarulhos": {
       cursos: ["Nenhuma", "Administração", "Desenvolvimento de Sistemas"]

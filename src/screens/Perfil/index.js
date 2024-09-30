@@ -4,15 +4,16 @@ import * as SecureStore from 'expo-secure-store';
 import { useFocusEffect } from '@react-navigation/native';
 
 const ProfileScreen = ({ navigation }) => {
-  const [user, setUser] = useState({
-    profilePictureURL:'https://as2.ftcdn.net/v2/jpg/03/49/49/79/1000_F_349497933_Ly4im8BDmHLaLzgyKg2f2yZOvJjBtlw5.jpg',
-    suggestion1ImageURL:'https://i1.sndcdn.com/artworks-000476135742-9j32r5-t500x500.jpg',
-    suggestion2ImageURL:'https://img.assinaja.com/upl/lojas/mundosinfinitos/imagens/foto-one-piece.png',
-    suggestion3ImageURL:'https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQJeZIThDjAfoSa4tzLwHDrx-xzp1Ye6Dd8AFhLoJqUzfRZS7da',
-    PublicacaoImagemURL:'https://s5.static.brasilescola.uol.com.br/be/2022/10/meme-joelma.jpg',
-    photoFundo: 'https://cdn.leroymerlin.com.br/products/revestimento_para_piscina_brilhante_azul_laguna_15x15cm_86951711_0001_600x600.jpg',
+  const [staticData, setStaticData] = useState({
+    suggestion1ImageURL: 'https://i1.sndcdn.com/artworks-000476135742-9j32r5-t500x500.jpg',
+    suggestion2ImageURL: 'https://img.assinaja.com/upl/lojas/mundosinfinitos/imagens/foto-one-piece.png',
+    suggestion3ImageURL: 'https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQJeZIThDjAfoSa4tzLwHDrx-xzp1Ye6Dd8AFhLoJqUzfRZS7da',
+    PublicacaoImagemURL: 'https://s5.static.brasilescola.uol.com.br/be/2022/10/meme-joelma.jpg',
     editar: 'https://cdn-icons-png.flaticon.com/512/1159/1159970.png',
     textPublication: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sapien eros, placerat ut aliquet eget, condimentum a dolor.',
+  });
+
+  const [user, setUser] = useState({ 
   });
 
   const loadUserData = async () => {
@@ -26,6 +27,10 @@ const ProfileScreen = ({ navigation }) => {
           name: storedUser.name,
           course: storedUser.course,
           username: storedUser.username,
+          school: storedUser.school,
+          course: storedUser.course,
+          backgroundPicture: storedUser.backgroundPictureURL,
+          bio: storedUser.bio
         }));
       }
     } catch (error) {
@@ -48,19 +53,18 @@ const ProfileScreen = ({ navigation }) => {
         />
       </Pressable>
       <Image
-        source={{ uri: user.photoFundo }}
+        source={{ uri: user.backgroundPicture }}
         style={styles.profileFundo}
       />
       <Image
         source={{ uri: user.profilePictureURL }}
         style={styles.profileImage}
       />
-<View style={styles.infoContainer}>
-      <Text style={styles.name}>Maria Andrade
-      <Text style={styles.pronouns}> ela/dela</Text></Text>
-      <Text style={styles.title}>Desenvolvimento de Sistemas</Text>
-      <Text style={styles.ct}>CT📚</Text>
-      <Text style={styles.quote}>Love 💖 and Peace ✌️</Text>
+      <View style={styles.infoContainer}>
+        <Text style={styles.name}>{user.name}</Text>
+        <Text style={styles.title}>{user.course}</Text>
+        <Text style={styles.ct}>{user.school}</Text>
+        <Text style={styles.quote}>{user.bio}</Text>
       </View>
       <View style={styles.editButtonContainer}>
         <Pressable onPress={() => navigation.navigate('Editar')}>
@@ -77,12 +81,12 @@ const ProfileScreen = ({ navigation }) => {
       <View style={styles.newPublication}>
         <View style={styles.header}>
           <Image
-            source={{ uri: user.profilePictureURL   }}
+            source={{ uri: user.profilePictureURL }}
             style={styles.userImage}
           />
           <View>
-            <Text style={styles.userName}>Maria Eduarda</Text>
-            <Text style={styles.userHandle}>@adardao</Text>
+            <Text style={styles.userName}>{user.name}</Text>
+            <Text style={styles.userHandle}>@{user.username}</Text>
           </View>
           <Pressable onPress={() => Alert.alert('Opções')}>
             <Text style={styles.moreOptions}>...</Text>
@@ -90,14 +94,14 @@ const ProfileScreen = ({ navigation }) => {
         </View>
         <Text style={styles.publicationText}>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</Text>
       </View>
-      
+
 
       {/* Sugestões*/}
       <Text style={styles.suggestionsTitle}>Sugestões</Text>
       <View style={styles.suggestionsContainer}>
         <View style={styles.suggestionItem}>
           <Image
-            source={{ uri: user.suggestion1ImageURL  }}
+            source={{ uri: staticData.suggestion1ImageURL }}
             style={styles.suggestionImage}
           />
           <Text>@enzoZL</Text>
@@ -107,7 +111,7 @@ const ProfileScreen = ({ navigation }) => {
         </View>
         <View style={styles.suggestionItem}>
           <Image
-            source={{ uri: user.suggestion2ImageURL  }}
+            source={{ uri: staticData.suggestion2ImageURL }}
             style={styles.suggestionImage}
           />
           <Text>@anthonyJR</Text>
@@ -117,7 +121,7 @@ const ProfileScreen = ({ navigation }) => {
         </View>
         <View style={styles.suggestionItem}>
           <Image
-            source={{ uri: user.suggestion3ImageURL  }}
+            source={{ uri: staticData.suggestion3ImageURL }}
             style={styles.suggestionImage}
           />
           <Text>@belleGirl</Text>
@@ -131,12 +135,12 @@ const ProfileScreen = ({ navigation }) => {
       <View style={styles.newPublication}>
         <View style={styles.header}>
           <Image
-            source={{ uri: user.profilePictureURL   }}
+            source={{ uri: user.profilePictureURL }}
             style={styles.userImage}
           />
           <View>
-            <Text style={styles.userName}>Maria Eduarda</Text>
-            <Text style={styles.userHandle}>@adardao</Text>
+            <Text style={styles.userName}>{user.name}</Text>
+            <Text style={styles.userHandle}>@{user.username}</Text>
           </View>
           <Pressable onPress={() => Alert.alert('Opções')}>
             <Text style={styles.moreOptions}>...</Text>
@@ -144,7 +148,7 @@ const ProfileScreen = ({ navigation }) => {
         </View>
         <Text style={styles.publicationText}>Sextou com s de churrasco</Text>
         <Image
-          source={{ uri: user.PublicacaoImagemURL  }}
+          source={{ uri: staticData.PublicacaoImagemURL }}
           style={styles.publicationImage}
         />
       </View>
@@ -161,7 +165,7 @@ const styles = StyleSheet.create({
   voltar: {
     position: "absolute",
     top: 6,
-    right: 16, 
+    right: 16,
     width: 35,
     height: 35,
   },
@@ -183,12 +187,12 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     borderWidth: 5,
     borderColor: '#fff',
-  }, 
+  },
   infoContainer: {
-    alignItems: 'flex-end',  
-    justifyContent: 'flex-start', 
-    width: '100%', 
-    paddingRight: 25, 
+    alignItems: 'flex-end',
+    justifyContent: 'flex-start',
+    width: '100%',
+    paddingRight: 25,
   },
   name: {
     fontSize: 22,
