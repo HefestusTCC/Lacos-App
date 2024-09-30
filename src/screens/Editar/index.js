@@ -112,7 +112,11 @@ const EditScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+<<<<<<< HEAD
+    backgroundColor: "#FFFFFF",
+=======
     backgroundColor: "#FFF5E1",
+>>>>>>> e00755f544c72885c7eaeabb888729e3e5961474
   },
   voltar: {
     marginTop: 10,
@@ -166,6 +170,27 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     backgroundColor: "#FF6E15",
+<<<<<<< HEAD
+    borderRadius: 10,
+    marginTop: 10,
+    marginBottom: 10,
+    fontSize: 18,
+  },
+  saveButtonText: {
+    color: "#FFFFFF",
+    fontSize: 18,
+  },
+  cancelButton: {
+    backgroundColor: "#e0e0e0",
+    borderRadius: 10,
+    marginTop: 10,
+    marginBottom: 10,
+    fontSize: 18,
+    borderColor: '#FF6E15'
+  },
+  cancelButtonText: {
+    color: "#FFFFFF",
+=======
     padding: 10,
     borderRadius: 8,
   },
@@ -180,6 +205,7 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     color: "#FFF",
+>>>>>>> e00755f544c72885c7eaeabb888729e3e5961474
     fontSize: 18,
   },
 });
