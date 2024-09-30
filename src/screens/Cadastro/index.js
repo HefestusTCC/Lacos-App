@@ -13,6 +13,7 @@ import {
 
 import { Picker } from '@react-native-picker/picker';
 import axios from "axios";
+import DatePicker from 'react-native-datepicker';
 import SERVER_IP from "../../config/serverConfig";
 
 const App = ({ navigation }) => {
@@ -102,6 +103,15 @@ const App = ({ navigation }) => {
     }
   };
 
+  state = {
+    data : ''
+  };
+
+  changeDate = (valor) => {
+    this.setState({
+      data : valor
+    })
+  }
   return (
     <View style={styles.container}>
       <Image
@@ -132,15 +142,23 @@ const App = ({ navigation }) => {
         onChangeText={setFullName}
       />
       <View>
+
+        <DatePicker
+          format="DD/MM/YYYY"
+          style={styles.dateComponente}
+          date={this.state.date}
+          onDateChange={this.changeDate}
+        />
+      </View>
+      <View>
         {/* Picker de Escolas */}
-        <Text>Escolha a Escola:</Text>
         <View style={styles.pickerBox}>
           <Picker
             style={styles.picker}
             selectedValue={selectedEtec}
             onValueChange={(itemValue) => handleEtecChange(itemValue)}
           >
-            <Picker.Item label="Nenhuma" value="Nenhuma" />
+            <Picker.Item label="Escolha a escola" value="Nenhuma" />
             {Object.keys(etecs).map((etec) => (
               <Picker.Item key={etec} label={etec} value={etec} style={styles.pickerItem} />
             ))}
@@ -150,7 +168,6 @@ const App = ({ navigation }) => {
         {/* Picker de Cursos */}
         {selectedEtec !== "Nenhuma" ? (
           <>
-            <Text>Escolha o Curso:</Text>
             <View style={styles.pickerBox}>
               <Picker
                 style={styles.picker}
@@ -195,6 +212,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     padding: 16,
   },
+  dateComponente:{
+    width: (windowWidth * 0.8),
+    height: 40,
+
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 12,
+   
+    color: "#000",
+    textAlign: "Left",
+  },
   divImage: {
     position: "absolute",
     top: 16,
@@ -224,18 +252,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     color: "#000",
   },
-  picker: {
-  },
   pickerBox: {
     width: (windowWidth * 0.8),
-    height: 40,
-    borderColor: "#000",
-    borderWidth: 1,
     borderRadius: 8,
     marginBottom: 12,
     color: "#000",
-    
-    textAlign: 'center'
+  },
+  picker: {
+    height: 40,
+    borderRadius: 8,
+    color: "#000",
   },
   pickerItem: {
     width: 40,
