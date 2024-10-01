@@ -13,8 +13,8 @@ import {
 
 import { Picker } from '@react-native-picker/picker';
 import axios from "axios";
-import DatePicker from 'react-native-datepicker';
 import SERVER_IP from "../../config/serverConfig";
+
 
 const App = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -103,15 +103,6 @@ const App = ({ navigation }) => {
     }
   };
 
-  state = {
-    data : ''
-  };
-
-  changeDate = (valor) => {
-    this.setState({
-      data : valor
-    })
-  }
   return (
     <View style={styles.container}>
       <Image
@@ -142,23 +133,15 @@ const App = ({ navigation }) => {
         onChangeText={setFullName}
       />
       <View>
-
-        <DatePicker
-          format="DD/MM/YYYY"
-          style={styles.dateComponente}
-          date={this.state.date}
-          onDateChange={this.changeDate}
-        />
-      </View>
-      <View>
         {/* Picker de Escolas */}
+        <Text>Escolha a Escola:</Text>
         <View style={styles.pickerBox}>
           <Picker
             style={styles.picker}
             selectedValue={selectedEtec}
             onValueChange={(itemValue) => handleEtecChange(itemValue)}
           >
-            <Picker.Item label="Escolha a escola" value="Nenhuma" />
+            <Picker.Item label="Nenhuma" value="Nenhuma" />
             {Object.keys(etecs).map((etec) => (
               <Picker.Item key={etec} label={etec} value={etec} style={styles.pickerItem} />
             ))}
@@ -168,6 +151,7 @@ const App = ({ navigation }) => {
         {/* Picker de Cursos */}
         {selectedEtec !== "Nenhuma" ? (
           <>
+            <Text>Escolha o Curso:</Text>
             <View style={styles.pickerBox}>
               <Picker
                 style={styles.picker}
@@ -192,7 +176,6 @@ const App = ({ navigation }) => {
         onChangeText={setPassword}
         secureTextEntry
       />
-
 
       <View style={styles.containerButton}>
         <Text>Já tem conta? <Pressable onPress={() => navigation.navigate('Login')} style={styles.ancora}><Text>Faça login.</Text></Pressable></Text>
@@ -256,6 +239,7 @@ const styles = StyleSheet.create({
     width: (windowWidth * 0.8),
     borderRadius: 8,
     marginBottom: 12,
+    borderWidth: 1,
     color: "#000",
   },
   picker: {

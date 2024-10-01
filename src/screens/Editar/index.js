@@ -62,7 +62,7 @@ const EditScreen = ({ navigation }) => {
     handleInputChange('course', '');
   };
 
-  const allInputsOk = async () => {
+  const allInputsOk = () => {
     if (!userData.name || !userData.profilePictureUrl || !userData.backgroundPictureUrl || !userData.school || userData.school == "Nenhuma" || userData.course == "Nenhuma" || !userData.course) {
       Alert.alert("Por favor, preencha todos os campos.");
       return false;
@@ -73,16 +73,17 @@ const EditScreen = ({ navigation }) => {
   const updateProfile = async () => {
     if (!allInputsOk()){
       return;
-    }
-    try {
-      const response = await api.put('/users/profile/me', userData);
-      if (response.status === 200) {
-        SecureStore.setItem("user", JSON.stringify(response.data));
-        Alert.alert("Usuário editado com sucesso!");
-        navigation.navigate('Perfil');
+    } else{
+      try {
+        const response = await api.put('/users/profile/me', userData);
+        if (response.status === 200) {
+          SecureStore.setItem("user", JSON.stringify(response.data));
+          Alert.alert("Usuário editado com sucesso!");
+          navigation.navigate('Perfil');
+        }
+      } catch (error) {
+        Alert.alert("Erro: " + error.message);
       }
-    } catch (error) {
-      Alert.alert("Erro: " + error.message);
     }
   }
 

@@ -6,6 +6,7 @@ import Cadastro from '../screens/Cadastro/index.js';
 import Perfil from '../screens/Perfil/index.js';
 import Editar from '../screens/Editar/index.js';
 import Preferencias from '../screens/Preferencias/index.js';
+import Timeline from '../screens/Timeline/index.js';
 export default function App() {
     const stack = createStackNavigator();
     return (
@@ -47,6 +48,14 @@ export default function App() {
                 <stack.Screen
                     name="Preferencias"
                     component={Preferencias}
+                    options={{
+                        title: '',
+                        headerShown: false
+                    }}
+                ></stack.Screen>
+                <stack.Screen
+                    name="Timeline"
+                    component={Timeline}
                     options={{
                         title: '',
                         headerShown: false

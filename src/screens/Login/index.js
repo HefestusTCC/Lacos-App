@@ -33,7 +33,7 @@ const App = ({ navigation }) => {
         SecureStore.setItem("jwt_token", response.data.accessToken);
         SecureStore.setItem("expiration", response.data.expiresIn.toString());
         SecureStore.setItem("user", JSON.stringify(response.data.user));
-        navigation.navigate('Perfil');
+        navigation.navigate('Timeline');
       } else {
         Alert.alert("Erro", "O e-mail ou senha informados estão incorretos.");
       }
