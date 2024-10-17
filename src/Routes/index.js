@@ -7,6 +7,8 @@ import Perfil from '../screens/Perfil/index.js';
 import Editar from '../screens/Editar/index.js';
 import Preferencias from '../screens/Preferencias/index.js';
 import Timeline from '../screens/Timeline/index.js';
+import TimeLineComunidades from '../screens/TimelineComunidade/index.js';
+import Comunidades from '../screens/Comunidades/index.js';
 export default function App() {
     const stack = createStackNavigator();
     return (
@@ -56,6 +58,22 @@ export default function App() {
                 <stack.Screen
                     name="Timeline"
                     component={Timeline}
+                    options={{
+                        title: '',
+                        headerShown: false
+                    }}
+                ></stack.Screen>
+                <stack.Screen
+                    name="Comunidades"
+                    component={Comunidades}
+                    options={{
+                        title: '',
+                        headerShown: false
+                    }}
+                ></stack.Screen>
+                <stack.Screen
+                    name="TimelineComunidade"
+                    component={TimeLineComunidades}
                     options={{
                         title: '',
                         headerShown: false
