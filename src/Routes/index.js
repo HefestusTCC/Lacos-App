@@ -9,6 +9,10 @@ import Preferencias from '../screens/Preferencias/index.js';
 import Timeline from '../screens/Timeline/index.js';
 import TimeLineComunidades from '../screens/TimelineComunidade/index.js';
 import Comunidades from '../screens/Comunidades/index.js';
+import ListaComunidades from '../screens/ListaComunidades/index.js';
+import Adicionar_Comunidade from '../screens/Adicionar_Comunidade/index.js';
+import Editar_Comunidade from '../screens/Editar_Comunidade/index.js';
+
 export default function App() {
     const stack = createStackNavigator();
     return (
@@ -74,6 +78,30 @@ export default function App() {
                 <stack.Screen
                     name="TimelineComunidade"
                     component={TimeLineComunidades}
+                    options={{
+                        title: '',
+                        headerShown: false
+                    }}
+                ></stack.Screen>
+                <stack.Screen
+                    name="ListaComunidades"
+                    component={ListaComunidades}
+                    options={{
+                        title: '',
+                        headerShown: false
+                    }}
+                ></stack.Screen>
+                <stack.Screen
+                    name="Adicionar_Comunidade"
+                    component={Adicionar_Comunidade}
+                    options={{
+                        title: '',
+                        headerShown: false
+                    }}
+                ></stack.Screen>
+                <stack.Screen
+                    name="Editar_Comunidade"
+                    component={Editar_Comunidade}
                     options={{
                         title: '',
                         headerShown: false
