@@ -1,7 +1,8 @@
-import React from 'react';
-import { View, Text, Image, TextInput, StyleSheet, TouchableOpacity, ScrollView, Pressable, Alert, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, TextInput, StyleSheet, TouchableOpacity, ScrollView, Pressable, Alert, Modal, Dimensions, FlatList } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import { useState } from 'react';
+import { AntDesign } from '@expo/vector-icons';
+
 const { width, height } = Dimensions.get('window');
 
 export default function Timeline({ navigation }) {
@@ -16,22 +17,81 @@ export default function Timeline({ navigation }) {
         school: storedUser.school,
         course: storedUser.course
     });
+    const [modalVisible, setModalVisible] = useState(false);
+    const [menuVisible, setMenuVisible] = useState(false);
+    const [commentsVisible, setCommentsVisible] = useState(false);
+    const [comments, setComments] = useState([]);
+    const [newComment, setNewComment] = useState('');
+
+    const [liked, setLiked] = useState(false); // Estado para controlar curtida
+
+    // Função para enviar denúncia
+    const handleReport = () => {
+        Alert.alert('Denúncia enviada com sucesso!');
+        setModalVisible(false);
+    };
+
+    // Função para adicionar comentário
+    const handleAddComment = () => {
+        if (newComment.trim() === '') return;
+        setComments([...comments, { text: newComment, user: userData }]); // Salva o comentário com informações do usuário
+        setNewComment('');
+    };
 
     const staticData = {
-        PublicacaoImagemURL: 'https://br.web.img2.acsta.net/pictures/20/01/06/14/19/2152576.jpg',
+        PublicacaoImagemURL: 'https://imagens.mdig.com.br/humor/cachorro_quente.jpg',
     };
+
+    // Componente LikeButton
+    const LikeButton = () => {
+        const toggleLike = () => {
+            setLiked(!liked);
+        };
+
+        return (
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <TouchableOpacity onPress={toggleLike}>
+                    <AntDesign
+                        name={liked ? 'heart' : 'hearto'}
+                        size={32}
+                        color='orange'
+                        margin={20}
+                    />
+                </TouchableOpacity>
+            </View>
+        );
+    };
+
+    // Componente CommentButton
+    const CommentButton = () => {
+        return (
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <TouchableOpacity onPress={() => setCommentsVisible(true)}>
+                    <AntDesign name="message1" size={32} color='orange' />
+                </TouchableOpacity>
+            </View>
+        );
+    };
+
+    // Componente para exibir cada comentário
+    const Comment = ({ comment }) => (
+        <View style={styles.commentContainer}>
+            <Image source={{ uri: comment.user.profilePictureUrl }} style={styles.commentUserImage} />
+            <View>
+                <Text style={styles.commentUserName}>{comment.user.name}</Text>
+                <Text style={styles.commentText}>{comment.text}</Text>
+            </View>
+        </View>
+    );
 
     return (
         <ScrollView style={styles.container}>
             <View style={styles.searchBarContainer}>
-                <TouchableOpacity style={styles.menuButton} onPress={() => Alert.alert('Menu de opções')}>
+                <TouchableOpacity style={styles.menuButton} onPress={() => setMenuVisible(!menuVisible)}>
                     <Image source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Hamburger_icon.svg/800px-Hamburger_icon.svg.png' }} style={styles.menuIcon} />
                 </TouchableOpacity>
 
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder="Pesquise algo..."
-                />
+                <TextInput style={styles.searchInput} placeholder="Pesquise algo..." />
 
                 <Image source={require("../../../assets/logo.png")} style={styles.logo} />
             </View>
@@ -83,6 +143,7 @@ export default function Timeline({ navigation }) {
                 </View>
             </View>
 
+            {/* Seção de Publicação */}
             <View style={styles.newPublication}>
                 <View style={styles.header}>
                     <Image
@@ -93,16 +154,81 @@ export default function Timeline({ navigation }) {
                         <Text style={styles.userName}>{userData.name}</Text>
                         <Text style={styles.userHandle}>@{userData.username}</Text>
                     </View>
-                    <Pressable onPress={() => Alert.alert('Opções')} style={styles.optionsButton}>
+                    <Pressable onPress={() => setModalVisible(true)} style={styles.optionsButton}>
                         <Text style={styles.moreOptions}>...</Text>
                     </Pressable>
                 </View>
                 <Text style={styles.publicationText}>Sextou com s de churrasco</Text>
                 <Image
-                    source={{ uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuX3r_jNqILxPP5t43wzDG7hpQHU49MJRf6A&s' }}
+                    source={{ uri: staticData.PublicacaoImagemURL }}
                     style={styles.publicationImage}
+                    onPress={() => setCommentsVisible(true)} // Abre o modal de comentários ao pressionar a imagem
                 />
+
+                {/* LIKE BUTTON */}
+                <View style={styles.likeButtonContainer}>
+                    <LikeButton />
+                    <CommentButton />
+                </View>
+
+                {/* Modal para Comentários */}
+                <Modal animationType="slide" transparent={true} visible={commentsVisible} onRequestClose={() => setCommentsVisible(false)}>
+                    <View style={styles.modalBackground}>
+                        <View style={styles.modalContainer}>
+                            <Text style={styles.modalTitle}>Comentários</Text>
+                            <Text style={styles.publicationText}>Sextou com s de churrasco</Text>
+                            <Image
+                                source={{ uri: staticData.PublicacaoImagemURL }}
+                                style={styles.publicationImage}
+                            />
+                            <FlatList
+                                data={comments}
+                                renderItem={({ item }) => <Comment comment={item} />} // Renderiza cada comentário
+                                keyExtractor={(item, index) => index.toString()}
+                            />
+                            <TextInput
+                                style={styles.commentInput}
+                                placeholder="Adicione um comentário..."
+                                value={newComment}
+                                onChangeText={setNewComment}
+                            />
+                            <TouchableOpacity onPress={handleAddComment} style={styles.addCommentButton}>
+                                <Text style={styles.addCommentButtonText}>Enviar</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => setCommentsVisible(false)} style={styles.closeButton}>
+                                <Text style={styles.closeButtonText}>Fechar</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
+
+                {/* Modal para Denúncia */}
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalVisible}
+                    onRequestClose={() => setModalVisible(false)}
+                >
+                    <View style={styles.modalBackground}>
+                        <View style={styles.modalContainer}>
+                            <Text style={styles.modalTitle}>Denunciar Postagem</Text>
+                            <TextInput style={styles.reportInput} placeholder="Motivo da denúncia" />
+                            <TouchableOpacity onPress={handleReport} style={styles.reportButton}>
+                                <Text style={styles.reportButtonText}>Enviar Denúncia</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
             </View>
+
+
+            {/* Menu Vertical */}
+            {menuVisible && (
+                <View style={styles.menu}>
+                    <Text style={styles.menuItem}>Configurações</Text>
+                    <Text style={styles.menuItem}>Sair</Text>
+                </View>
+            )}
         </ScrollView>
     );
 }
@@ -115,29 +241,29 @@ const styles = StyleSheet.create({
     },
     searchBarContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: height * 0.02,
+        padding: 10,
+        backgroundColor: '#f8f8f8',
     },
     menuButton: {
-        marginRight: width * 0.02,
+        marginRight: 10,
     },
     menuIcon: {
-        width: width * 0.07,
-        height: width * 0.07,
+        width: 30,
+        height: 30,
     },
     searchInput: {
         flex: 1,
-        padding: height * 0.015,
+        height: 40,
         borderColor: '#ccc',
         borderWidth: 1,
-        borderRadius: 8,
-        backgroundColor: '#f2f2f2',
-        marginRight: width * 0.02,
+        borderRadius: 5,
+        paddingHorizontal: 10,
     },
     logo: {
-        width: width * 0.12,
-        height: width * 0.12,
+        width: 50,
+        height: 50,
+        marginLeft: 10,
     },
     newButton: {
         backgroundColor: '#f58523',
@@ -149,7 +275,6 @@ const styles = StyleSheet.create({
     newButtonText: {
         color: '#fff',
         fontWeight: 'bold',
-        fontSize: height * 0.02,
     },
     profileSection: {
         flexDirection: 'row',
@@ -157,96 +282,182 @@ const styles = StyleSheet.create({
         marginBottom: height * 0.02,
     },
     profileImage: {
-        width: width * 0.2,
-        height: width * 0.2,
-        borderRadius: (width * 0.2) / 2,
-        borderWidth: 2,
-        borderColor: '#ff6f00',
-        marginRight: width * 0.03,
+        width: width * 0.15,
+        height: width * 0.15,
+        borderRadius: (width * 0.15) / 2,
+        marginRight: width * 0.02,
     },
     profileInfo: {
-        justifyContent: 'center', // Para centralizar verticalmente
+        flex: 1,
     },
     welcomeText: {
         fontSize: height * 0.025,
     },
+    orangeText: {
+        color: 'orange',
+    },
     courseText: {
-        fontSize: height * 0.018,
-        color: 'gray',
-        marginTop: 5, // Distância do texto de boas-vindas
+        fontSize: height * 0.022,
+        color: '#777',
     },
     bioText: {
-        fontSize: height * 0.015,
-        marginTop: 5, // Distância do curso
-    },
-    orangeText: {
-        color: '#ff6f00',
-        fontWeight: 'bold',
+        fontSize: height * 0.02,
+        color: '#666',
     },
     communitySection: {
-        marginTop: height * 0.03,
+        padding: 10,
+        backgroundColor: '#f8f8f8',
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
     },
     communitiesRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        marginTop: 10,
     },
     communityCard: {
+        width: width * 0.28,
         alignItems: 'center',
-        width: '30%',
     },
     communityImage: {
-        width: width * 0.25,
-        height: width * 0.25,
+        width: '100%',
+        height: width * 0.30,
         borderRadius: 10,
-        marginBottom: height * 0.01,
     },
     communityName: {
-        textAlign: 'center',
-        fontSize: height * 0.015,
-        color: '#333',
+        marginTop: 5,
+        fontWeight: 'bold',
     },
     newPublication: {
-        backgroundColor: '#f9f9f9',
-        padding: height * 0.02,
-        borderRadius: 10,
-        marginTop: height * 0.03,
+        padding: 10,
+        backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: height * 0.015,
-        justifyContent: 'space-between',
     },
     userImage: {
-        width: width * 0.13,
-        height: width * 0.13,
-        borderRadius: (width * 0.13) / 2,
-        marginRight: width * 0.03,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        marginRight: 10,
     },
     userName: {
-        fontSize: height * 0.02,
         fontWeight: 'bold',
     },
     userHandle: {
-        fontSize: height * 0.018,
-        color: 'gray',
-    },
-    moreOptions: {
-        fontSize: height * 0.03,
-        fontWeight: 'bold',
-        textAlign: 'right',
+        color: '#aaa',
     },
     optionsButton: {
-        flex: 1,
-        alignItems: 'flex-end',
+        marginLeft: 'auto',
+    },
+    moreOptions: {
+        fontSize: 20,
     },
     publicationText: {
-        fontSize: height * 0.02,
-        marginVertical: height * 0.02,
+        marginVertical: 10,
     },
     publicationImage: {
         width: '100%',
-        height: height * 0.3,
+        height: 200,
         borderRadius: 10,
+    },
+    likeButtonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginVertical: 10,
+    },
+    modalBackground: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContainer: {
+        width: width * 0.8,
+        backgroundColor: 'white',
+        borderRadius: 10,
+        padding: width * 0.05,
+        elevation: 5,
+    },
+    modalTitle: {
+        fontSize: height * 0.025,
+        fontWeight: 'bold',
+        marginBottom: height * 0.02,
+    },
+    commentInput: {
+        height: 40,
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 5,
+        paddingHorizontal: 10,
+        marginTop: 10,
+    },
+    addCommentButton: {
+        backgroundColor: '#f58523',
+        padding: height * 0.02,
+        borderRadius: 10,
+        marginTop: 10,
+        alignItems: 'center', 
+    },
+    addCommentButtonText: {
+        color: '#fff',
+    },
+    closeButton: {
+        marginTop: 10,
+        alignItems: 'center',
+    },
+    closeButtonText: {
+        color: 'orange',
+    },
+    menu: {
+        position: 'absolute',
+        right: 0,
+        top: 50,
+        backgroundColor: '#fff',
+        padding: 10,
+        borderRadius: 5,
+        elevation: 5,
+    },
+    menuItem: {
+        padding: 10,
+    },
+    commentContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 10,
+    },
+    commentUserImage: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        marginRight: 10,
+    },
+    commentUserName: {
+        fontWeight: 'bold',
+    },
+    commentText: {
+        color: '#555',
+    },
+    reportInput: {
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 8,
+        padding: height * 0.015,
+        marginBottom: height * 0.02,
+    },
+    reportButton: {
+        backgroundColor: '#f58523',
+        padding: height * 0.02,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    reportButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
     },
 });
