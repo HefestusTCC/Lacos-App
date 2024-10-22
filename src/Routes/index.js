@@ -12,6 +12,7 @@ import Comunidades from '../screens/Comunidades/index.js';
 import ListaComunidades from '../screens/ListaComunidades/index.js';
 import Adicionar_Comunidade from '../screens/Adicionar_Comunidade/index.js';
 import Editar_Comunidade from '../screens/Editar_Comunidade/index.js';
+import Postar from '../screens/Postar/index.js';
 
 export default function App() {
     const stack = createStackNavigator();
@@ -102,6 +103,14 @@ export default function App() {
                 <stack.Screen
                     name="Editar_Comunidade"
                     component={Editar_Comunidade}
+                    options={{
+                        title: '',
+                        headerShown: false
+                    }}
+                ></stack.Screen>
+                <stack.Screen
+                    name="Postar"
+                    component={Postar}
                     options={{
                         title: '',
                         headerShown: false

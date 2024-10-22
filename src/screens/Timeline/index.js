@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TextInput, StyleSheet, TouchableOpacity, ScrollView, Pressable, Alert, Modal, Dimensions, FlatList } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { AntDesign } from '@expo/vector-icons';
@@ -19,9 +19,27 @@ export default function Timeline({ navigation }) {
         school: storedUser.school,
         course: storedUser.course
     });
-    const [modalVisible, setModalVisible] = useState(false);
+    const [reportModal, setReportModal] = useState(null);
     const [menuVisible, setMenuVisible] = useState(false);
-    const [commentsVisible, setCommentsVisible] = useState(false);
+    const [visibleCommentsForPost, setVisibleCommentsForPost] = useState(null);
+    const [posts, setPosts] = useState([]);
+    const [newComment, setNewComment] = useState('');
+    const [reportValue, setReportValue] = useState('');
+
+    const openReportModal = (postId) => {
+        setReportModal(postId);
+    }
+
+    const closeReportModal = () => {
+        setReportModal(null);
+    };
+
+    const openCommentsModal = (postId) => {
+        setVisibleCommentsForPost(postId);
+    };
+    const closeCommentsModal = () => {
+        setVisibleCommentsForPost(null);
+    };
     const getFeed = async () => {
         try {
             const response = await api.get('/feed');
@@ -31,22 +49,55 @@ export default function Timeline({ navigation }) {
             Alert.alert("Erro ao consultar feed", error.response.data.message)
         }
     }
-    const [posts, setPosts] = useState(getFeed());
-    const [newComment, setNewComment] = useState('');
 
 
+    const report = async (id) => {
+        if (!reportValue){
+            Alert.alert("Não é possível criar uma denúncia vazia");
+            return;
+        }
+        const reportData = {
+            "message": reportValue
+        }
+        try{
+            const response = await api.post(`/tickets/post/${id}`, reportData);
+            if (response.status == 201){
+                Alert.alert("Denúncia criada com sucesso");
+                return true;
+            }
+        } catch (error){
+            Alert.alert("Erro ao criar denúncia", error.response.data.message);
+            return false;
+        }
+        setReportValue('');
+    }
 
     // Função para enviar denúncia
-    const handleReport = () => {
-        Alert.alert('Denúncia enviada com sucesso!');
-        setModalVisible(false);
+    const handleReport = async (id) => {
+        let reported = await report(id);
+        // setReportValue('');
+        setReportModal(null);
     };
 
     // Função para adicionar comentário
-    const handleAddComment = () => {
-        if (newComment.trim() === '') return;
-        // setComments([...comments, { text: newComment, user: userData }]); // Salva o comentário com informações do usuário
-        setNewComment('');
+    const handleAddComment = async (id) => {
+        if (!newComment){
+            Alert.alert("Não é possível criar um comentário vazio.");
+            return;
+        }
+        let updatedComments  = await createComment(id);
+        if (updatedComments){
+            setPosts(prevPosts =>
+                prevPosts.map(post => 
+                    post.id === id 
+                        ? { 
+                            ...post, 
+                            comments: updatedComments // Atualiza com os comentários retornados
+                          } 
+                        : post
+                )
+            );
+        }
     };
 
 
@@ -54,16 +105,47 @@ export default function Timeline({ navigation }) {
         return post.likes.some(like => like.user.id === userData.id);
     };
 
+    const like = async (id, alreadyLiked)  => {
+        try{
+            const response = await api.post(`/post/${id}/like`);
+            if (response.status == 200){
+                Alert.alert("like ou deslike com sucesso")
+                // console.log("likes: " + JSON.stringify(response.data.data.likes));
+                return !alreadyLiked;
+            }
+        } catch (error){
+            console.log(error.response.data.message);
+            Alert.alert("Erro ao dar like ou unlike:", error.response.data.message)
+        }
+    }
+    const createComment = async (id) => {
+        console.log("reach create comment")
+        const commentData = {
+            "content": newComment
+        }
+        try{
+            const response = await api.post(`/post/${id}/comment`, commentData);
+            if (response.status == 201){
+                Alert.alert("Comentário criado com sucesso");
+                return response.data.data.comments;
+            }
+        } catch (error){
+            Alert.alert("Erro ao criar comentário", error.response.data.message)
+        }
+        setNewComment('');
+    }
+
     // Componente LikeButton
-    const LikeButton = (post) => {
+    const LikeButton = ({ post }) => {
         const [liked, setLiked] = useState(didUserLikePost(post));
-        const toggleLike = () => {
-            setLiked(!liked);
+        const toggleLike = async (id, alreadyLiked) => {
+            let newLikedState = await like(id, alreadyLiked);
+            setLiked(newLikedState);
         };
 
         return (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <TouchableOpacity onPress={toggleLike}>
+                <TouchableOpacity onPress={() => toggleLike(post.id, liked)}>
                     <AntDesign
                         name={liked ? 'heart' : 'hearto'}
                         size={32}
@@ -76,10 +158,10 @@ export default function Timeline({ navigation }) {
     };
 
     // Componente CommentButton
-    const CommentButton = () => {
+    const CommentButton = ({ id }) => {
         return (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <TouchableOpacity onPress={() => setCommentsVisible(true)}>
+                <TouchableOpacity onPress={() => openCommentsModal(id)}>
                     <AntDesign name="message1" size={32} color='orange' />
                 </TouchableOpacity>
             </View>
@@ -87,19 +169,31 @@ export default function Timeline({ navigation }) {
     };
 
     // Componente para exibir cada comentário
-    const Comment = ({ comment }) => (
-        <View style={styles.commentContainer}>
-            <Image source={{ uri: comment.author.profilePictureURL }} style={styles.commentUserImage} />
-            <View>
-                <Text style={styles.commentUserName}>{comment.author.username}</Text>
-                <Text style={styles.commentText}>{comment.content}</Text>
-            </View>
-        </View>
-    );
+    const Comment = ({ comment }) => {
+        if (!comment) return null;
+        comment = comment.item;
+        return (
+            <>
+                <View style={styles.commentContainer}>
+                    <Image source={{ uri: comment.author.profilePictureURL }} style={styles.commentUserImage} />
+                    <View>
+                        <Text style={styles.userName}>{comment.author.name}</Text>
+                        <Text style={styles.userHandle}>@{comment.author.username}</Text>
+                        <Text style={styles.commentText}>{comment.content}</Text>
+                    </View>
+                </View>
+            </>
+        );
+    };
 
     const renderPosts = ({ item }) => {
-        const post = item;
-        console.log(post)
+        if (!item || !item.author) {
+            
+            return null;
+        }
+        let post = item;
+
+
         return (
             <>
                 {/* Seção de Publicação */}
@@ -113,7 +207,7 @@ export default function Timeline({ navigation }) {
                             <Text style={styles.userName}>{post.author.name}</Text>
                             <Text style={styles.userHandle}>@{post.author.username}</Text>
                         </View>
-                        <Pressable onPress={() => setModalVisible(true)} style={styles.optionsButton}>
+                        <Pressable onPress={() => openReportModal(post.id)} style={styles.optionsButton}>
                             <Text style={styles.moreOptions}>...</Text>
                         </Pressable>
                     </View>
@@ -121,29 +215,37 @@ export default function Timeline({ navigation }) {
                     {post.image != null ? <Image
                         source={{ uri: post.image }}
                         style={styles.publicationImage}
-                        onPress={() => setCommentsVisible(true)} // Abre o modal de comentários ao pressionar a imagem
+                        onPress={() => openCommentsModal(post.id)} // Abre o modal de comentários ao pressionar a imagem
                     /> : null}
 
                     {/* LIKE BUTTON */}
                     <View style={styles.likeButtonContainer}>
                         <LikeButton post={post} />
-                        <CommentButton />
+                        <CommentButton id={post.id} />
                     </View>
 
                     {/* Modal para Comentários */}
-                    <Modal animationType="slide" transparent={true} visible={commentsVisible} onRequestClose={() => setCommentsVisible(false)}>
+                    <Modal animationType="slide" transparent={true} visible={visibleCommentsForPost === post.id} onRequestClose={closeCommentsModal}>
                         <View style={styles.modalBackground}>
                             <View style={styles.modalContainer}>
                                 <Text style={styles.modalTitle}>Comentários</Text>
+                                <View style={styles.header}>
+                                    <Image
+                                        source={{ uri: post.author.profilePictureURL }}
+                                        style={styles.userImage}
+                                    />
+                                    <View>
+                                        <Text style={styles.userName}>{post.author.name}</Text>
+                                        <Text style={styles.userHandle}>@{post.author.username}</Text>
+                                    </View>
+                                </View>
                                 <Text style={styles.publicationText}>{post.content}</Text>
-                                <Image
-                                    source={{ uri: post.image }}
-                                    style={styles.publicationImage}
-                                />
+                                {post.image ?<Image source={{ uri: post.image }} style={styles.publicationImage}/> : null}
                                 <FlatList
-                                    data={post.comments}
-                                    renderItem={(item) => <Comment comment={item} />} // Renderiza cada comentário
-                                    keyExtractor={(item, index) => index.toString()}
+                                    data={item.comments}
+                                    renderItem={(item) => item ? <Comment comment={item} /> : null} // Renderiza cada comentário
+                                    keyExtractor={(item) => item.id.toString()}
+                                    style={styles.comments}
                                 />
                                 <TextInput
                                     style={styles.commentInput}
@@ -151,10 +253,10 @@ export default function Timeline({ navigation }) {
                                     value={newComment}
                                     onChangeText={setNewComment}
                                 />
-                                <TouchableOpacity onPress={handleAddComment} style={styles.addCommentButton}>
+                                <TouchableOpacity onPress={() => handleAddComment(post.id)} style={styles.addCommentButton}>
                                     <Text style={styles.addCommentButtonText}>Enviar</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={() => setCommentsVisible(false)} style={styles.closeButton}>
+                                <TouchableOpacity onPress={() => setVisibleCommentsForPost(null)} style={styles.closeButton}>
                                     <Text style={styles.closeButtonText}>Fechar</Text>
                                 </TouchableOpacity>
                             </View>
@@ -165,14 +267,14 @@ export default function Timeline({ navigation }) {
                     <Modal
                         animationType="slide"
                         transparent={true}
-                        visible={modalVisible}
-                        onRequestClose={() => setModalVisible(false)}
+                        visible={reportModal == post.id}
+                        onRequestClose={() => closeReportModal()}
                     >
                         <View style={styles.modalBackground}>
                             <View style={styles.modalContainer}>
                                 <Text style={styles.modalTitle}>Denunciar Postagem</Text>
-                                <TextInput style={styles.reportInput} placeholder="Motivo da denúncia" />
-                                <TouchableOpacity onPress={handleReport} style={styles.reportButton}>
+                                <TextInput value={reportValue} onChangeText={setReportValue} style={styles.reportInput} placeholder="Motivo da denúncia" />
+                                <TouchableOpacity onPress={() => handleReport(post.id)} style={styles.reportButton}>
                                     <Text style={styles.reportButtonText}>Enviar Denúncia</Text>
                                 </TouchableOpacity>
                             </View>
@@ -182,6 +284,14 @@ export default function Timeline({ navigation }) {
             </>
         );
     }
+
+    useEffect(() => {
+        const fetchFeed = async () => {
+            const feedData = await getFeed();
+            setPosts(feedData); // Adiciona novos posts à lista existente
+        };
+        fetchFeed();
+    }, []);
 
     return (
         <View style={styles.container}>
@@ -195,9 +305,9 @@ export default function Timeline({ navigation }) {
                 <Image source={require("../../../assets/logo.png")} style={styles.logo} />
             </View>
 
-            <TouchableOpacity style={styles.newButton}>
+            <Pressable style={styles.newButton} onPress={() => navigation.navigate('Postar')}>
                 <Text style={styles.newButtonText}>Novo</Text>
-            </TouchableOpacity>
+            </Pressable>
 
             <View style={styles.profileSection}>
                 <Pressable onPress={() => navigation.navigate('Perfil')}>
@@ -241,11 +351,11 @@ export default function Timeline({ navigation }) {
                     </View>
                 </View>
             </View>
-            {console.log(JSON.stringify(posts))}
             <FlatList
                 data={posts}
                 renderItem={renderPosts}
-                keyExtractor={item => item.id}
+                keyExtractor={item => item.id.toString()}
+                style={styles.posts}
             />
             {/* Menu Vertical */}
             {menuVisible && (
@@ -484,5 +594,11 @@ const styles = StyleSheet.create({
     reportButtonText: {
         color: '#fff',
         fontWeight: 'bold',
+    },
+    posts:{
+        flex: 1,
+    },
+    comments: {
+        maxHeight: 200
     },
 });
