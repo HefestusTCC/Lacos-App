@@ -99,7 +99,8 @@ const App = ({ navigation }) => {
         Alert.alert("Erro ao criar usuário. Tente novamente.");
       }
     } catch (error) {
-      Alert.alert("Erro ao criar usuário:", error.message);
+
+      Alert.alert("Erro ao criar usuário:", error.response.data.message);
     }
   };
 

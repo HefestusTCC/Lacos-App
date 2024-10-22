@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Image, TextInput, StyleSheet, TouchableOpacity, ScrollView, Pressable, Alert, Modal, Dimensions, FlatList } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { AntDesign } from '@expo/vector-icons';
+import api from '../../config/api.js';
 
 const { width, height } = Dimensions.get('window');
 
@@ -9,6 +10,7 @@ export default function Timeline({ navigation }) {
     const jsonString = SecureStore.getItem("user");
     const storedUser = JSON.parse(jsonString);
     const [userData, setUserData] = useState({
+        id: storedUser.id,
         name: storedUser.name,
         username: storedUser.username,
         profilePictureUrl: storedUser.profilePictureURL,
@@ -20,10 +22,19 @@ export default function Timeline({ navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
     const [menuVisible, setMenuVisible] = useState(false);
     const [commentsVisible, setCommentsVisible] = useState(false);
-    const [comments, setComments] = useState([]);
+    const getFeed = async () => {
+        try {
+            const response = await api.get('/feed');
+            //console.log(response.data.data)
+            return await response.data.data;
+        } catch (error) {
+            Alert.alert("Erro ao consultar feed", error.response.data.message)
+        }
+    }
+    const [posts, setPosts] = useState(getFeed());
     const [newComment, setNewComment] = useState('');
 
-    const [liked, setLiked] = useState(false); // Estado para controlar curtida
+
 
     // Função para enviar denúncia
     const handleReport = () => {
@@ -34,16 +45,18 @@ export default function Timeline({ navigation }) {
     // Função para adicionar comentário
     const handleAddComment = () => {
         if (newComment.trim() === '') return;
-        setComments([...comments, { text: newComment, user: userData }]); // Salva o comentário com informações do usuário
+        // setComments([...comments, { text: newComment, user: userData }]); // Salva o comentário com informações do usuário
         setNewComment('');
     };
 
-    const staticData = {
-        PublicacaoImagemURL: 'https://imagens.mdig.com.br/humor/cachorro_quente.jpg',
+
+    const didUserLikePost = (post) => {
+        return post.likes.some(like => like.user.id === userData.id);
     };
 
     // Componente LikeButton
-    const LikeButton = () => {
+    const LikeButton = (post) => {
+        const [liked, setLiked] = useState(didUserLikePost(post));
         const toggleLike = () => {
             setLiked(!liked);
         };
@@ -76,16 +89,102 @@ export default function Timeline({ navigation }) {
     // Componente para exibir cada comentário
     const Comment = ({ comment }) => (
         <View style={styles.commentContainer}>
-            <Image source={{ uri: comment.user.profilePictureUrl }} style={styles.commentUserImage} />
+            <Image source={{ uri: comment.author.profilePictureURL }} style={styles.commentUserImage} />
             <View>
-                <Text style={styles.commentUserName}>{comment.user.name}</Text>
-                <Text style={styles.commentText}>{comment.text}</Text>
+                <Text style={styles.commentUserName}>{comment.author.username}</Text>
+                <Text style={styles.commentText}>{comment.content}</Text>
             </View>
         </View>
     );
 
+    const renderPosts = ({ item }) => {
+        const post = item;
+        console.log(post)
+        return (
+            <>
+                {/* Seção de Publicação */}
+                <View style={styles.newPublication}>
+                    <View style={styles.header}>
+                        <Image
+                            source={{ uri: post.author.profilePictureURL }}
+                            style={styles.userImage}
+                        />
+                        <View>
+                            <Text style={styles.userName}>{post.author.name}</Text>
+                            <Text style={styles.userHandle}>@{post.author.username}</Text>
+                        </View>
+                        <Pressable onPress={() => setModalVisible(true)} style={styles.optionsButton}>
+                            <Text style={styles.moreOptions}>...</Text>
+                        </Pressable>
+                    </View>
+                    <Text style={styles.publicationText}>{post.content}</Text>
+                    {post.image != null ? <Image
+                        source={{ uri: post.image }}
+                        style={styles.publicationImage}
+                        onPress={() => setCommentsVisible(true)} // Abre o modal de comentários ao pressionar a imagem
+                    /> : null}
+
+                    {/* LIKE BUTTON */}
+                    <View style={styles.likeButtonContainer}>
+                        <LikeButton post={post} />
+                        <CommentButton />
+                    </View>
+
+                    {/* Modal para Comentários */}
+                    <Modal animationType="slide" transparent={true} visible={commentsVisible} onRequestClose={() => setCommentsVisible(false)}>
+                        <View style={styles.modalBackground}>
+                            <View style={styles.modalContainer}>
+                                <Text style={styles.modalTitle}>Comentários</Text>
+                                <Text style={styles.publicationText}>{post.content}</Text>
+                                <Image
+                                    source={{ uri: post.image }}
+                                    style={styles.publicationImage}
+                                />
+                                <FlatList
+                                    data={post.comments}
+                                    renderItem={(item) => <Comment comment={item} />} // Renderiza cada comentário
+                                    keyExtractor={(item, index) => index.toString()}
+                                />
+                                <TextInput
+                                    style={styles.commentInput}
+                                    placeholder="Adicione um comentário..."
+                                    value={newComment}
+                                    onChangeText={setNewComment}
+                                />
+                                <TouchableOpacity onPress={handleAddComment} style={styles.addCommentButton}>
+                                    <Text style={styles.addCommentButtonText}>Enviar</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => setCommentsVisible(false)} style={styles.closeButton}>
+                                    <Text style={styles.closeButtonText}>Fechar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </Modal>
+
+                    {/* Modal para Denúncia */}
+                    <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={modalVisible}
+                        onRequestClose={() => setModalVisible(false)}
+                    >
+                        <View style={styles.modalBackground}>
+                            <View style={styles.modalContainer}>
+                                <Text style={styles.modalTitle}>Denunciar Postagem</Text>
+                                <TextInput style={styles.reportInput} placeholder="Motivo da denúncia" />
+                                <TouchableOpacity onPress={handleReport} style={styles.reportButton}>
+                                    <Text style={styles.reportButtonText}>Enviar Denúncia</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </Modal>
+                </View>
+            </>
+        );
+    }
+
     return (
-        <ScrollView style={styles.container}>
+        <View style={styles.container}>
             <View style={styles.searchBarContainer}>
                 <TouchableOpacity style={styles.menuButton} onPress={() => setMenuVisible(!menuVisible)}>
                     <Image source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Hamburger_icon.svg/800px-Hamburger_icon.svg.png' }} style={styles.menuIcon} />
@@ -142,86 +241,12 @@ export default function Timeline({ navigation }) {
                     </View>
                 </View>
             </View>
-
-            {/* Seção de Publicação */}
-            <View style={styles.newPublication}>
-                <View style={styles.header}>
-                    <Image
-                        source={{ uri: userData.profilePictureUrl }}
-                        style={styles.userImage}
-                    />
-                    <View>
-                        <Text style={styles.userName}>{userData.name}</Text>
-                        <Text style={styles.userHandle}>@{userData.username}</Text>
-                    </View>
-                    <Pressable onPress={() => setModalVisible(true)} style={styles.optionsButton}>
-                        <Text style={styles.moreOptions}>...</Text>
-                    </Pressable>
-                </View>
-                <Text style={styles.publicationText}>Sextou com s de churrasco</Text>
-                <Image
-                    source={{ uri: staticData.PublicacaoImagemURL }}
-                    style={styles.publicationImage}
-                    onPress={() => setCommentsVisible(true)} // Abre o modal de comentários ao pressionar a imagem
-                />
-
-                {/* LIKE BUTTON */}
-                <View style={styles.likeButtonContainer}>
-                    <LikeButton />
-                    <CommentButton />
-                </View>
-
-                {/* Modal para Comentários */}
-                <Modal animationType="slide" transparent={true} visible={commentsVisible} onRequestClose={() => setCommentsVisible(false)}>
-                    <View style={styles.modalBackground}>
-                        <View style={styles.modalContainer}>
-                            <Text style={styles.modalTitle}>Comentários</Text>
-                            <Text style={styles.publicationText}>Sextou com s de churrasco</Text>
-                            <Image
-                                source={{ uri: staticData.PublicacaoImagemURL }}
-                                style={styles.publicationImage}
-                            />
-                            <FlatList
-                                data={comments}
-                                renderItem={({ item }) => <Comment comment={item} />} // Renderiza cada comentário
-                                keyExtractor={(item, index) => index.toString()}
-                            />
-                            <TextInput
-                                style={styles.commentInput}
-                                placeholder="Adicione um comentário..."
-                                value={newComment}
-                                onChangeText={setNewComment}
-                            />
-                            <TouchableOpacity onPress={handleAddComment} style={styles.addCommentButton}>
-                                <Text style={styles.addCommentButtonText}>Enviar</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => setCommentsVisible(false)} style={styles.closeButton}>
-                                <Text style={styles.closeButtonText}>Fechar</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </Modal>
-
-                {/* Modal para Denúncia */}
-                <Modal
-                    animationType="slide"
-                    transparent={true}
-                    visible={modalVisible}
-                    onRequestClose={() => setModalVisible(false)}
-                >
-                    <View style={styles.modalBackground}>
-                        <View style={styles.modalContainer}>
-                            <Text style={styles.modalTitle}>Denunciar Postagem</Text>
-                            <TextInput style={styles.reportInput} placeholder="Motivo da denúncia" />
-                            <TouchableOpacity onPress={handleReport} style={styles.reportButton}>
-                                <Text style={styles.reportButtonText}>Enviar Denúncia</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </Modal>
-            </View>
-
-
+            {console.log(JSON.stringify(posts))}
+            <FlatList
+                data={posts}
+                renderItem={renderPosts}
+                keyExtractor={item => item.id}
+            />
             {/* Menu Vertical */}
             {menuVisible && (
                 <View style={styles.menu}>
@@ -229,7 +254,7 @@ export default function Timeline({ navigation }) {
                     <Text style={styles.menuItem}>Sair</Text>
                 </View>
             )}
-        </ScrollView>
+        </View>
     );
 }
 
@@ -402,7 +427,7 @@ const styles = StyleSheet.create({
         padding: height * 0.02,
         borderRadius: 10,
         marginTop: 10,
-        alignItems: 'center', 
+        alignItems: 'center',
     },
     addCommentButtonText: {
         color: '#fff',

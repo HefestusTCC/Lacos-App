@@ -3,15 +3,8 @@ import { View, Text, Image, ScrollView, Pressable, StyleSheet, Alert } from 'rea
 import * as SecureStore from 'expo-secure-store';
 import { useFocusEffect } from '@react-navigation/native';
 
+
 const ProfileScreen = ({ navigation }) => {
-  const [staticData, setStaticData] = useState({
-    suggestion1ImageURL: 'https://i1.sndcdn.com/artworks-000476135742-9j32r5-t500x500.jpg',
-    suggestion2ImageURL: 'https://img.assinaja.com/upl/lojas/mundosinfinitos/imagens/foto-one-piece.png',
-    suggestion3ImageURL: 'https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQJeZIThDjAfoSa4tzLwHDrx-xzp1Ye6Dd8AFhLoJqUzfRZS7da',
-    PublicacaoImagemURL: 'https://s5.static.brasilescola.uol.com.br/be/2022/10/meme-joelma.jpg',
-    editar: 'https://cdn-icons-png.flaticon.com/512/1159/1159970.png',
-    textPublication: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sapien eros, placerat ut aliquet eget, condimentum a dolor.',
-  });
 
   const [user, setUser] = useState({ 
   });
