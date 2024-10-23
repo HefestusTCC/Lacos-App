@@ -1,27 +1,43 @@
-import React from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useState, useEffect, useCallback } from 'react';
 import { View, Text, Image, StyleSheet, FlatList, Pressable, Dimensions } from 'react-native';
-
+import api from '../../config/api.js';
 const { width, height } = Dimensions.get('window');
 
-
-const comunidades = [
-    { id: '1', nome: 'DS 1', imagem: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhW5S7bNG6u5fKsmwvycoS0EgtE2naf9wblA&s' },
-    { id: '2', nome: 'DS 2', imagem: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhW5S7bNG6u5fKsmwvycoS0EgtE2naf9wblA&s' },
-    { id: '3', nome: 'DS 3', imagem: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhW5S7bNG6u5fKsmwvycoS0EgtE2naf9wblA&s' },
-    { id: '4', nome: 'Teste 4', imagem: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhW5S7bNG6u5fKsmwvycoS0EgtE2naf9wblA&s' },
-    { id: '5', nome: 'Teste 5', imagem: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhW5S7bNG6u5fKsmwvycoS0EgtE2naf9wblA&s' },
-    { id: '6', nome: 'Teste 6', imagem: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhW5S7bNG6u5fKsmwvycoS0EgtE2naf9wblA&s' },
-];
-
 export default function ({ navigation }) {
+    const [comunidades, setComunidades] = useState(null);
+    const getCommunities = async () => {
+        try {
+            const response = await api.get('/community/all');
+            //console.log(response.data.data)
+            return await response.data.data;
+        } catch (error) {
+            Alert.alert("Erro ao consultar feed", error.response.data.message)
+        }
+    }
+
+    useFocusEffect(
+        useCallback(() => {
+            const getCommunities = async () => {
+                try {
+                    const response = await api.get('/community/all');
+                    //console.log(response.data.data)
+                    setComunidades(response.data.data);
+                } catch (error) {
+                    Alert.alert("Erro ao consultar feed", error.response.data.message)
+                }
+            }
+            getCommunities();
+        }, [])
+    );
     const renderItem = ({ item }) => (
         <View style={styles.communityCard}>
-            <Pressable onPress={() => navigation.navigate('Editar_Comunidade')}>
+            <Pressable onPress={() => navigation.navigate('TimelineComunidade', {id: item.id})}>
                 <Image
-                    source={{ uri: item.imagem }}
+                    source={{ uri: item.communityImageUrl }}
                     style={styles.communityImage}
                 />
-                <Text style={styles.communityName}>{item.nome}</Text>
+                <Text style={styles.communityName}>{item.name}</Text>
             </Pressable>
         </View>
     );

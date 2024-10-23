@@ -1,11 +1,41 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Image, StyleSheet, Pressable, Alert, ScrollView, Button } from 'react-native';
+import api from '../../config/api.js';
 
+const Editar_Comunidade = ({ navigation, route }) => {
+  const comunidade = route.params.comunidade;
+  const id = comunidade.id;
+  const [name, setName] = useState(comunidade.name);
+  const [fotoUrl, setFotoUrl] = useState(comunidade.communityPictureUrl);
+  const [fundoUrl, setFundoUrl] = useState(comunidade.bannerUrl);
+  const [description, setDescription] = useState(comunidade.description);
+  const updateCommunity = async () => {
+    if (!name || !description){
+      Alert.alert("O nome e a descrição da comunidade não podem ficar vazios!");
+      return;
+    }
+    const communityData = {
+      name: name,
+      communityImageUrl: fotoUrl ? fotoUrl : null,
+      bannerUrl: fundoUrl ? fundoUrl : null,
+      description: description,
+      categories: ['Tecnologia']
+    }
+    try{
+      let response = await api.put(`/community/${id}`, communityData);
+      if (response.status == 200){
+        Alert.alert("Comunidade atualizada com sucesso");
+        navigation.goBack();
+      }
 
-const Editar_Comunidade = ({ navigation }) => {
+    } catch (error){
+      console.log(error)
+      Alert.alert("Erro ao atualizar a comunidade");
+    }
+  }
   return (
     <ScrollView style={styles.container}>
-      <Pressable onPress={() => navigation.navigate('#')}>{/*futura pg de comunidade*/}
+      <Pressable onPress={() => navigation.goBack()}>{}
         <Image
           source={require("../../../assets/voltar.png")}
           style={styles.voltar}
@@ -14,53 +44,43 @@ const Editar_Comunidade = ({ navigation }) => {
 
       <Text style={styles.header}>Editar Comunidade</Text>
 
-      <View style={styles.profileContainer}>
-        <Image
-          source={{ }} //futura imagem de perfil comunidade
-          style={styles.profileImage}
-        />
-        <Pressable onPress={() => Alert.alert("Alterar foto")}>
-          <Text style={styles.changePhotoText}>Alterar foto da comunidade</Text>
-        </Pressable>
-      </View>
-
       <View style={styles.card}>
         <Text style={styles.label}>Nome da comunidade:</Text>
         <TextInput
           style={styles.input}
-          //value={}
-          onChangeText={(text) => handleInputChange('name', text)}
+          value={name}
+          onChangeText={setName}
 
         />
 
         <Text style={styles.label}>Url da foto da comunidade:</Text>
         <TextInput
           style={styles.input}
-          //value={}
-          onChangeText={(text) => handleInputChange('profilePictureUrl', text)}
+          value={fotoUrl}
+          onChangeText={setFotoUrl}
         />
 
         <Text style={styles.label}>Url da foto de fundo:</Text>
         <TextInput
           style={styles.input}
-          //value={}
-          onChangeText={(text) => handleInputChange('backgroundPictureUrl', text)}
+          value={fundoUrl}
+          onChangeText={setFundoUrl}
         />
 
         <Text style={styles.label}>Descrição: </Text>
         <TextInput
           style={styles.input_descricao}
-          //value={}
+          value={description}
           multiline={true}
-          onChangeText={(text) => handleInputChange('', text)}
+          onChangeText={setDescription}
           
         />
         
         <View style={styles.buttonContainer}>
-          <Pressable style={styles.saveButton} onPress={"#"}>
+          <Pressable style={styles.saveButton} onPress={() => updateCommunity()}>
             <Text style={styles.saveButtonText}>Salvar</Text>
           </Pressable>
-          <Pressable style={styles.cancelButton} onPress={() => navigation.navigate('Perfil')}>
+          <Pressable style={styles.cancelButton} onPress={() => navigation.goBack()}>
             <Text style={styles.cancelButtonText}>Cancelar</Text>
           </Pressable>
         </View>

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useState, useEffect, useCallback } from 'react';
 import { View, Text, Image, TextInput, StyleSheet, TouchableOpacity, ScrollView, Pressable, Alert, Modal, Dimensions, FlatList } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { AntDesign } from '@expo/vector-icons';
@@ -52,20 +53,20 @@ export default function Timeline({ navigation }) {
 
 
     const report = async (id) => {
-        if (!reportValue){
+        if (!reportValue) {
             Alert.alert("Não é possível criar uma denúncia vazia");
             return;
         }
         const reportData = {
             "message": reportValue
         }
-        try{
+        try {
             const response = await api.post(`/tickets/post/${id}`, reportData);
-            if (response.status == 201){
+            if (response.status == 201) {
                 Alert.alert("Denúncia criada com sucesso");
                 return true;
             }
-        } catch (error){
+        } catch (error) {
             Alert.alert("Erro ao criar denúncia", error.response.data.message);
             return false;
         }
@@ -81,23 +82,24 @@ export default function Timeline({ navigation }) {
 
     // Função para adicionar comentário
     const handleAddComment = async (id) => {
-        if (!newComment){
+        if (!newComment) {
             Alert.alert("Não é possível criar um comentário vazio.");
             return;
         }
-        let updatedComments  = await createComment(id);
-        if (updatedComments){
+        let updatedComments = await createComment(id);
+        if (updatedComments) {
             setPosts(prevPosts =>
-                prevPosts.map(post => 
-                    post.id === id 
-                        ? { 
-                            ...post, 
+                prevPosts.map(post =>
+                    post.id === id
+                        ? {
+                            ...post,
                             comments: updatedComments // Atualiza com os comentários retornados
-                          } 
+                        }
                         : post
                 )
             );
         }
+        setNewComment('');
     };
 
 
@@ -105,41 +107,46 @@ export default function Timeline({ navigation }) {
         return post.likes.some(like => like.user.id === userData.id);
     };
 
-    const like = async (id, alreadyLiked)  => {
-        try{
+    const like = async (id, alreadyLiked) => {
+        try {
             const response = await api.post(`/post/${id}/like`);
-            if (response.status == 200){
-                Alert.alert("like ou deslike com sucesso")
+            if (response.status == 200) {
                 // console.log("likes: " + JSON.stringify(response.data.data.likes));
                 return !alreadyLiked;
             }
-        } catch (error){
-            console.log(error.response.data.message);
+        } catch (error) {
+
             Alert.alert("Erro ao dar like ou unlike:", error.response.data.message)
         }
     }
     const createComment = async (id) => {
-        console.log("reach create comment")
+
         const commentData = {
             "content": newComment
         }
-        try{
+        try {
             const response = await api.post(`/post/${id}/comment`, commentData);
-            if (response.status == 201){
+            if (response.status == 201) {
                 Alert.alert("Comentário criado com sucesso");
                 return response.data.data.comments;
             }
-        } catch (error){
+        } catch (error) {
             Alert.alert("Erro ao criar comentário", error.response.data.message)
         }
-        setNewComment('');
+
     }
 
     // Componente LikeButton
     const LikeButton = ({ post }) => {
         const [liked, setLiked] = useState(didUserLikePost(post));
+        const [likeCount, setLikeCount] = useState(post.likeCount);
         const toggleLike = async (id, alreadyLiked) => {
             let newLikedState = await like(id, alreadyLiked);
+            if (newLikedState) {
+                setLikeCount(likeCount + 1);
+            } else {
+                setLikeCount(likeCount - 1);
+            }
             setLiked(newLikedState);
         };
 
@@ -153,6 +160,7 @@ export default function Timeline({ navigation }) {
                         margin={20}
                     />
                 </TouchableOpacity>
+                <Text>{likeCount}</Text>
             </View>
         );
     };
@@ -188,7 +196,7 @@ export default function Timeline({ navigation }) {
 
     const renderPosts = ({ item }) => {
         if (!item || !item.author) {
-            
+
             return null;
         }
         let post = item;
@@ -215,7 +223,7 @@ export default function Timeline({ navigation }) {
                     {post.image != null ? <Image
                         source={{ uri: post.image }}
                         style={styles.publicationImage}
-                        onPress={() => openCommentsModal(post.id)} // Abre o modal de comentários ao pressionar a imagem
+                        // Abre o modal de comentários ao pressionar a imagem
                     /> : null}
 
                     {/* LIKE BUTTON */}
@@ -225,7 +233,7 @@ export default function Timeline({ navigation }) {
                     </View>
 
                     {/* Modal para Comentários */}
-                    <Modal animationType="slide" transparent={true} visible={visibleCommentsForPost === post.id} onRequestClose={closeCommentsModal}>
+                    <Modal animationType="slide" transparent={true} visible={visibleCommentsForPost === post.id} >
                         <View style={styles.modalBackground}>
                             <View style={styles.modalContainer}>
                                 <Text style={styles.modalTitle}>Comentários</Text>
@@ -240,7 +248,7 @@ export default function Timeline({ navigation }) {
                                     </View>
                                 </View>
                                 <Text style={styles.publicationText}>{post.content}</Text>
-                                {post.image ?<Image source={{ uri: post.image }} style={styles.publicationImage}/> : null}
+                                {post.image ? <Image source={{ uri: post.image }} style={styles.publicationImage} /> : null}
                                 <FlatList
                                     data={item.comments}
                                     renderItem={(item) => item ? <Comment comment={item} /> : null} // Renderiza cada comentário
@@ -285,13 +293,15 @@ export default function Timeline({ navigation }) {
         );
     }
 
-    useEffect(() => {
-        const fetchFeed = async () => {
-            const feedData = await getFeed();
-            setPosts(feedData); // Adiciona novos posts à lista existente
-        };
-        fetchFeed();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            const fetchFeed = async () => {
+                const feedData = await getFeed();
+                setPosts(feedData); // Adiciona novos posts à lista existente
+            };
+            fetchFeed();
+        }, [])
+    );
 
     return (
         <View style={styles.container}>
@@ -328,27 +338,27 @@ export default function Timeline({ navigation }) {
             <View style={styles.communitySection}>
                 <Text style={styles.sectionTitle}>Comunidades</Text>
                 <View style={styles.communitiesRow}>
-                    <View style={styles.communityCard}>
+                    <Pressable style={styles.communityCard} onPress={() => navigation.navigate("ListaComunidades")}>
+                            <Image
+                                source={{ uri: 'https://cdn-icons-png.flaticon.com/512/3090/3090423.png' }}
+                                style={styles.communityImage}
+                            />
+                            <Text style={[styles.communityName, { textAlign: 'center' }]}>Listar Comunidades</Text>
+                    </Pressable>
+                    <Pressable style={styles.communityCard} onPress={() => navigation.navigate("Adicionar_Comunidade")}>
                         <Image
-                            source={{ uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhW5S7bNG6u5fKsmwvycoS0EgtE2naf9wblA&s' }}
+                            source={{ uri: 'https://cdn-icons-png.flaticon.com/512/60/60732.png' }}
                             style={styles.communityImage}
                         />
-                        <Text style={styles.communityName}>1° DS</Text>
-                    </View>
-                    <View style={styles.communityCard}>
-                        <Image
-                            source={{ uri: 'https://www.tecnoset.com.br/wp-content/uploads/2019/01/original-5c134a6326db16e46f81d5adca341559.jpg' }}
-                            style={styles.communityImage}
-                        />
-                        <Text style={styles.communityName}>2° DS</Text>
-                    </View>
-                    <View style={styles.communityCard}>
+                        <Text style={[styles.communityName, { textAlign: 'center' }]}>Criar comunidade</Text>
+                    </Pressable>
+                    {/* <View style={styles.communityCard}>
                         <Image
                             source={{ uri: 'https://www.asuris.com.br/upload/blog/QhEb6JuOjOogFNZSINwpOaKn9bEJbEVq3Y0iCGu1.jpg' }}
                             style={styles.communityImage}
                         />
-                        <Text style={styles.communityName}>3° DS</Text>
-                    </View>
+                        <Text style={[styles.communityName, {textAlign: 'center'}]}>Minhas comunidades</Text>
+                    </View> */}
                 </View>
             </View>
             <FlatList
@@ -449,7 +459,7 @@ const styles = StyleSheet.create({
     },
     communitiesRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'space-around',
         marginTop: 10,
     },
     communityCard: {
@@ -460,6 +470,7 @@ const styles = StyleSheet.create({
         width: '100%',
         height: width * 0.30,
         borderRadius: 10,
+
     },
     communityName: {
         marginTop: 5,
@@ -595,7 +606,7 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: 'bold',
     },
-    posts:{
+    posts: {
         flex: 1,
     },
     comments: {

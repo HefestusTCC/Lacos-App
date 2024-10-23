@@ -1,11 +1,39 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Image, StyleSheet, Pressable, Alert, ScrollView, Button } from 'react-native';
-
+import api from "../../config/api";
 
 const Adicionar_Comunidade = ({ navigation }) => {
+  const [name, setName] = useState('');
+  const [fotoUrl, setFotoUrl] = useState('');
+  const [fundoUrl, setFundoUrl] = useState('');
+  const [description, setDescription] = useState('');
+  const createCommunity = async () => {
+    if (!name || !description){
+      Alert.alert("O nome e a descrição da comunidade não podem ficar vazios!");
+      return;
+    }
+    const communityData = {
+      name: name,
+      communityImageUrl: fotoUrl ? fotoUrl : null,
+      bannerUrl: fundoUrl ? fundoUrl : null,
+      description: description,
+      categories: ['Tecnologia']
+    }
+    try{
+      let response = await api.post('/community', communityData);
+      if (response.status == 201){
+        Alert.alert("Comunidade criada com sucesso");
+        navigation.navigate("ListaComunidades");
+      }
+
+    } catch (error){
+      console.log(JSON.stringify(error))
+      Alert.alert("Erro ao criar a comunidade", error.response.data.message)
+    }
+  }
   return (
     <ScrollView style={styles.container}>
-      <Pressable onPress={() => navigation.navigate('ListaComunidades')}>{}
+      <Pressable onPress={() => navigation.goBack()}>{}
         <Image
           source={require("../../../assets/voltar.png")}
           style={styles.voltar}
@@ -14,22 +42,12 @@ const Adicionar_Comunidade = ({ navigation }) => {
 
       <Text style={styles.header}>Adicionar Comunidade</Text>
 
-      <View style={styles.profileContainer}>
-        <Image
-          source={{ }} //futura imagem de perfil comunidade
-          style={styles.profileImage}
-        />
-        <Pressable onPress={() => Alert.alert("Alterar foto")}>
-          <Text style={styles.changePhotoText}>foto da comunidade</Text>
-        </Pressable>
-      </View>
-
       <View style={styles.card}>
         <Text style={styles.label}>Nome da comunidade:</Text>
         <TextInput
           style={styles.input}
           //value={}
-          onChangeText={(text) => handleInputChange('name', text)}
+          onChangeText={setName}
 
         />
 
@@ -37,14 +55,14 @@ const Adicionar_Comunidade = ({ navigation }) => {
         <TextInput
           style={styles.input}
           //value={}
-          onChangeText={(text) => handleInputChange('profilePictureUrl', text)}
+          onChangeText={setFotoUrl}
         />
 
         <Text style={styles.label}>Url da foto de fundo:</Text>
         <TextInput
           style={styles.input}
           //value={}
-          onChangeText={(text) => handleInputChange('backgroundPictureUrl', text)}
+          onChangeText={setFundoUrl}
         />
 
         <Text style={styles.label}>Descrição: </Text>
@@ -52,15 +70,15 @@ const Adicionar_Comunidade = ({ navigation }) => {
           style={styles.input_descricao}
           //value={}
           multiline={true}
-          onChangeText={(text) => handleInputChange('', text)}
+          onChangeText={setDescription}
           
         />
         
         <View style={styles.buttonContainer}>
-          <Pressable style={styles.saveButton} onPress={"#"}>
+          <Pressable style={styles.saveButton} onPress={() => createCommunity()}>
             <Text style={styles.saveButtonText}>Salvar</Text>
           </Pressable>
-          <Pressable style={styles.cancelButton} onPress={() => navigation.navigate('Perfil')}>
+          <Pressable style={styles.cancelButton} onPress={() => navigation.goBack()}>
             <Text style={styles.cancelButtonText}>Cancelar</Text>
           </Pressable>
         </View>
