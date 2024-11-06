@@ -342,9 +342,18 @@ const TimelineComunidade = ({ navigation, route }) => {
 
     <View style={styles.container}>
       <View style={styles.headerBanner}>
+      <View style={styles.nav}>
+                    <View style={styles.navButton}>
+                        <Pressable onPress={() => navigation.navigate('Timeline')}>
+                            <Image
+                                source={require("../../../assets/voltar.png")}
+                                style={styles.voltar}
+                            />
+                        </Pressable>
+                    </View>
+                </View>
         <Text style={styles.headerTitleBanner}>{comunidade.name}</Text>
         <Text style={styles.headerMember}>{comunidade.memberCount} membro(s)</Text>
-        <Text style={styles.headerSubtitle}>{comunidade.description}</Text>
       </View>
       <FlatList
         data={posts}
@@ -352,52 +361,46 @@ const TimelineComunidade = ({ navigation, route }) => {
         keyExtractor={item => item.id}
         style={styles.feed}
       />
-      <View style={styles.navBar}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Timeline')}>
-          <Text style={styles.backButtonText}> Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Postar', { idComunidade: idComunidade })}>
-          <Text style={styles.backButtonText}> Criar Post para comunidade</Text>
-        </TouchableOpacity>
-        {comunidade ? 
-          comunidade.creator.id ? 
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Editar_Comunidade', { comunidade: comunidade })}>
-              <Text style={styles.backButtonText}> Editar Comunidade</Text>
-            </TouchableOpacity> 
-            : null 
-        : null}
-
-      </View>
     </View>
   );
 };
 const styles = StyleSheet.create({
-
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   headerBanner: {
-    alignItems: '',
-    padding: 10,
+    width:'100%',
+    height:'28%',
     backgroundColor: '#f58523',
-    borderBottomLeftRadius: 1,
-    borderBottomRightRadius: 1,
   },
   headerTitleBanner: {
-    alignItems: 'center',
-    fontSize: 20,
+    fontSize: 27,
     color: '#fff',
     fontWeight: '400',
+    marginTop:'18%',
+    marginLeft:'5%',
   },
-  headerSubtitleFirst: {
-    fontSize: 16,
-    color: '#fff',
-    textAlign: 'center',
+  headerMember: {
+    fontSize: 15,
+    color: '#fcc195',
+    marginLeft:'5%',
+  },
+  nav: {
+    flexDirection: 'row',
+    alignItems: 'left',
+    marginTop:'12%',
+    marginLeft:'5%'
+  },
+
+navButton: {
     flex: 1,
-  },
-  headerSubtitleFirst: {
-    fontSize: 16,
-    color: '#fff',
-    textAlign: 'center',
-    flex: 1,
-  },
+    alignItems: 'left',
+},
+voltar: {
+    width: 22,
+    height: 22,
+},
   saveButton: {
     padding: 1,
   },
@@ -411,35 +414,9 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
 
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  header: {
-    alignItems: '',
-    padding: 10,
-    backgroundColor: '#f58523',
-    borderBottomLeftRadius: 1,
-    borderBottomRightRadius: 1,
-
-  },
-  headerTitle: {
-    alignItems: 'center',
-    fontSize: 40,
-    color: '#fff',
-    fontWeight: '400',
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    color: '#fff',
-  },
   descText: {
     fontSize: 12,
     color: '#fff',
-  },
-  headerMember: {
-    fontSize: 15,
-    color: '#d2691e',
   },
   feed: {
     padding: 30,
@@ -512,11 +489,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-  container: {
-    flex: 1,
-    padding: width * 0.05,
-    backgroundColor: '#fff',
-  },
+
   searchBarContainer: {
     flexDirection: 'row',
     alignItems: 'center',
