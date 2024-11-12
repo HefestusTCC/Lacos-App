@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Image, StyleSheet, Pressable, Alert, ScrollView, Button } from 'react-native';
+import { View, Text, TextInput, Image, StyleSheet, Pressable, Alert, ScrollView, Button, Dimensions } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as SecureStore from 'expo-secure-store';
+import * as ImagePicker from 'expo-image-picker';
 import api from '../../config/api.js';
+const { width, height } = Dimensions.get('window');
 
 const EditScreen = ({ navigation }) => {
   const jsonString = SecureStore.getItem("user");
@@ -48,7 +50,7 @@ const EditScreen = ({ navigation }) => {
     course: storedUser.course
   });
   const [cursos, setCursos] = useState(etecs[storedUser.school]?.cursos || []);
-
+  const [imageUri, setImageUri] = useState(null); // URI local da imagem
   const handleInputChange = (field, value) => {
     setUserData(prevState => ({
       ...prevState,
@@ -86,6 +88,56 @@ const EditScreen = ({ navigation }) => {
       }
     }
   }
+  
+
+  async function pickImage() {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      alert("Permissão para acessar a galeria é necessária!");
+      return;
+    }
+  
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 0.8,
+    });
+  
+    if (!result.canceled) {
+      setImageUri(result.assets[0].uri); 
+      let imageUrl = await uploadImageToCloudinary(result.assets[0].uri);
+      setUserData({...userData,
+        'profilePictureUrl': imageUrl
+      })
+    }
+  }
+
+  async function uploadImageToCloudinary(imageUri) {
+    const cloudName = "dl85nlwfe";
+    const uploadPreset = "lacosapp";
+    
+    const formData = new FormData();
+    formData.append("file", {
+      uri: imageUri,
+      type: "image/jpeg",
+      name: "profile_image.jpg",
+    });
+    formData.append("upload_preset", uploadPreset);
+  
+    try {
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      console.log(data)
+      return data.secure_url; // Retorna a URL da imagem carregada
+    } catch (error) {
+      console.log(error)
+      console.error("Erro ao fazer upload da imagem:", error.response);
+      return null;
+    }
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -103,7 +155,7 @@ const EditScreen = ({ navigation }) => {
           source={{ uri: userData.profilePictureUrl }}
           style={styles.profileImage}
         />
-        <Pressable onPress={() => Alert.alert("Alterar foto")}>
+        <Pressable onPress={() => pickImage()}>
           <Text style={styles.changePhotoText}>Alterar foto de perfil</Text>
         </Pressable>
       </View>
@@ -122,14 +174,6 @@ const EditScreen = ({ navigation }) => {
           style={styles.input}
           value={userData.profilePictureUrl}
           onChangeText={(text) => handleInputChange('profilePictureUrl', text)}
-          placeholderTextColor="#FF6E15"
-        />
-
-        <Text style={styles.label}>Url da foto de fundo:</Text>
-        <TextInput
-          style={styles.input}
-          value={userData.backgroundPictureUrl}
-          onChangeText={(text) => handleInputChange('backgroundPictureUrl', text)}
           placeholderTextColor="#FF6E15"
         />
 

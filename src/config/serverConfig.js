@@ -1,3 +1,3 @@
-const SERVER_IP = 'https://lacos-api.onrender.com';
+const SERVER_IP = 'http://lacos-api.kinghost.net/lacosapp';
 
 export default SERVER_IP;

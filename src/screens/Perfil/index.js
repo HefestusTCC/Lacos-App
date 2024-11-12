@@ -13,7 +13,7 @@ const ProfileScreen = ({ navigation }) => {
   const [profile, setProfile] = useState('');
   const securedUser = SecureStore.getItem('user');
   var userId = JSON.parse(securedUser).id;
-  console.log("userId " + userId)
+
   const loadUserData = async () => {
     try {
       const jsonString = await SecureStore.getItemAsync('user');
@@ -120,7 +120,6 @@ const ProfileScreen = ({ navigation }) => {
     try {
       const response = await api.post(`/post/${id}/like`);
       if (response.status == 200) {
-        // console.log("likes: " + JSON.stringify(response.data.data.likes));
         return !alreadyLiked;
       }
     } catch (error) {
@@ -304,17 +303,14 @@ const ProfileScreen = ({ navigation }) => {
 
   const getProfileData = async () => {
     try {
-      const response = await api.get(`/users/profile/${userId}`);
+      const response = await api.get(`/users/${userId}`);
       if (response.status == 200) {
         return response.data.data;
       }
     } catch (error) {
-      console.log("aqui" + error.response.data);
       Alert.alert("Erro ao carregar o perfil");
     }
   }
-
-
 
   useFocusEffect(
     useCallback(() => {
@@ -323,7 +319,7 @@ const ProfileScreen = ({ navigation }) => {
         setProfile(data);
         if (data.posts) {
           setPosts(data.posts); // Defina os posts aqui apenas quando estiverem disponíveis
-          console.log("Posts carregados:", data.posts);
+
         }
       }
       loadUserData();
@@ -370,49 +366,10 @@ const ProfileScreen = ({ navigation }) => {
           renderItem={renderPosts}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={{ flexGrow: 1 }}
-          style={{height: '100%'}}
+          style={{height: '100%', width: '100%'}}
           nestedScrollEnabled={true}  // O conteúdo pode expandir
         />
       </View>
-
-
-
-      {/* Sugestões*/}
-      {/* <Text style={styles.suggestionsTitle}>Sugestões</Text>
-      <View style={styles.suggestionsContainer}>
-        <View style={styles.suggestionItem}>
-          <Image
-            source={{ uri: staticData.suggestion1ImageURL }}
-            style={styles.suggestionImage}
-          />
-          <Text>@enzoZL</Text>
-          <Pressable style={styles.followButton} onPress={() => Alert.alert('Seguir')}>
-            <Text style={styles.followButtonText}>Seguir</Text>
-          </Pressable>
-        </View>
-        <View style={styles.suggestionItem}>
-          <Image
-            source={{ uri: staticData.suggestion2ImageURL }}
-            style={styles.suggestionImage}
-          />
-          <Text>@anthonyJR</Text>
-          <Pressable style={styles.followButton} onPress={() => Alert.alert('Seguir')}>
-            <Text style={styles.followButtonText}>Seguir</Text>
-          </Pressable>
-        </View>
-        <View style={styles.suggestionItem}>
-          <Image
-            source={{ uri: staticData.suggestion3ImageURL }}
-            style={styles.suggestionImage}
-          />
-          <Text>@belleGirl</Text>
-          <Pressable style={styles.followButton} onPress={() => Alert.alert('Seguir')}>
-            <Text style={styles.followButtonText}>Seguir</Text>
-          </Pressable>
-        </View>
-      </View> */}
-
-      {/* Publicação */}
 
 
     </ScrollView>
@@ -547,7 +504,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
     padding: 10,
     borderRadius: 10,
-    width: '90%',
+    width: width * 0.8,
     marginTop: 20,
   },
   header: {
@@ -662,6 +619,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+    width: width * 0.8
   },
   header: {
     flexDirection: 'row',

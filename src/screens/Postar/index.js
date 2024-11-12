@@ -4,6 +4,7 @@ import api from '../../config/api.js';
 const Index = ({ navigation, route }) => {
     const [text, setText] = useState(null);
     const [image, setImage] = useState(null);
+    const idComunidade = route?.params?.idComunidade;
 
     const createPost = async () => {
         if (!text) {
@@ -19,9 +20,9 @@ const Index = ({ navigation, route }) => {
                 content: text
             }
         }
-        if (route.params.idComunidade) {
+        if (idComunidade) {
             try {
-                const response = await api.post(`/community/${route.params.idComunidade}/post`, postData);
+                const response = await api.post(`/community/${idComunidade}/post`, postData);
                 if (response.status == 201) {
                     Alert.alert("Post criado com sucesso");
                     navigation.goBack();

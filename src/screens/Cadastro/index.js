@@ -85,7 +85,7 @@ const App = ({ navigation }) => {
 
     try {
       const response = await axios.post(`${SERVER_IP}/users/register`, createUserData);
-      console.log(response.data);
+      console.log(response);
       if (response.status === 201) {
         Alert.alert("Usuário criado com sucesso!");
         setEmail("");
