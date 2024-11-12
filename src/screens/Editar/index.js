@@ -3,6 +3,7 @@ import { View, Text, TextInput, Image, StyleSheet, Pressable, Alert, ScrollView,
 import { Picker } from '@react-native-picker/picker';
 import * as SecureStore from 'expo-secure-store';
 import * as ImagePicker from 'expo-image-picker';
+import { FontAwesome } from '@expo/vector-icons';
 import api from '../../config/api.js';
 const { width, height } = Dimensions.get('window');
 
@@ -73,22 +74,22 @@ const EditScreen = ({ navigation }) => {
   }
 
   const updateProfile = async () => {
-    if (!allInputsOk()){
+    if (!allInputsOk()) {
       return;
-    } else{
+    } else {
       try {
         const response = await api.put('/users/profile/me', userData);
         if (response.status === 200) {
           SecureStore.setItem("user", JSON.stringify(response.data));
           Alert.alert("Usuário editado com sucesso!");
-          navigation.navigate('Perfil');
+          navigation.goBack();
         }
       } catch (error) {
         Alert.alert("Erro: " + error.message);
       }
     }
   }
-  
+
 
   async function pickImage() {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -96,18 +97,41 @@ const EditScreen = ({ navigation }) => {
       alert("Permissão para acessar a galeria é necessária!");
       return;
     }
-  
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: false,
       quality: 0.8,
     });
-  
+
     if (!result.canceled) {
-      setImageUri(result.assets[0].uri); 
+      setImageUri(result.assets[0].uri);
       let imageUrl = await uploadImageToCloudinary(result.assets[0].uri);
-      setUserData({...userData,
+      setUserData({
+        ...userData,
         'profilePictureUrl': imageUrl
+      })
+    }
+  }
+  async function pickBackgroundImage() {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      alert("Permissão para acessar a galeria é necessária!");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setImageUri(result.assets[0].uri);
+      let imageUrl = await uploadImageToCloudinary(result.assets[0].uri);
+      setUserData({
+        ...userData,
+        'backgroundPictureUrl': imageUrl
       })
     }
   }
@@ -115,7 +139,7 @@ const EditScreen = ({ navigation }) => {
   async function uploadImageToCloudinary(imageUri) {
     const cloudName = "dl85nlwfe";
     const uploadPreset = "lacosapp";
-    
+
     const formData = new FormData();
     formData.append("file", {
       uri: imageUri,
@@ -123,14 +147,13 @@ const EditScreen = ({ navigation }) => {
       name: "profile_image.jpg",
     });
     formData.append("upload_preset", uploadPreset);
-  
+
     try {
       const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
         method: "POST",
         body: formData,
       });
       const data = await response.json();
-      console.log(data)
       return data.secure_url; // Retorna a URL da imagem carregada
     } catch (error) {
       console.log(error)
@@ -149,15 +172,17 @@ const EditScreen = ({ navigation }) => {
       </Pressable>
 
       <Text style={styles.header}>Editar Perfil</Text>
-
-      <View style={styles.profileContainer}>
-        <Image
-          source={{ uri: userData.profilePictureUrl }}
-          style={styles.profileImage}
-        />
-        <Pressable onPress={() => pickImage()}>
-          <Text style={styles.changePhotoText}>Alterar foto de perfil</Text>
+      <View>
+        <Pressable onPress={pickBackgroundImage} style={styles.imageBackground}>
+          <Image source={{ uri: userData.backgroundPictureUrl }} style={styles.profileFundo} />
+          <FontAwesome name="edit" size={24} color="#FF6E15" style={styles.editIcon} />
         </Pressable>
+        <View style={styles.profileContainer}>
+          <Image source={{ uri: userData.profilePictureUrl }} style={styles.profileImage} />
+          <Pressable onPress={pickImage} style={styles.editIconContainer}>
+            <FontAwesome name="edit" size={24} color="#FF6E15" />
+          </Pressable>
+        </View>
       </View>
 
       <View style={styles.card}>
@@ -166,14 +191,6 @@ const EditScreen = ({ navigation }) => {
           style={styles.input}
           value={userData.name}
           onChangeText={(text) => handleInputChange('name', text)}
-          placeholderTextColor="#FF6E15"
-        />
-
-        <Text style={styles.label}>Url da foto de perfil:</Text>
-        <TextInput
-          style={styles.input}
-          value={userData.profilePictureUrl}
-          onChangeText={(text) => handleInputChange('profilePictureUrl', text)}
           placeholderTextColor="#FF6E15"
         />
 
@@ -223,7 +240,7 @@ const EditScreen = ({ navigation }) => {
           <Pressable style={styles.saveButton} onPress={updateProfile}>
             <Text style={styles.saveButtonText}>Salvar</Text>
           </Pressable>
-          <Pressable style={styles.cancelButton} onPress={() => navigation.navigate('Perfil')}>
+          <Pressable style={styles.cancelButton} onPress={() => navigation.goBack()}>
             <Text style={styles.cancelButtonText}>Cancelar</Text>
           </Pressable>
         </View>
@@ -266,7 +283,7 @@ const styles = StyleSheet.create({
   },
   card: {
     padding: 20,
-    marginTop: 20,
+    marginTop: height * 0.35,
   },
   label: {
     fontSize: 18,
@@ -300,6 +317,13 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
   },
+  profileFundo: {
+    position: 'absolute',
+    width: '97%',
+    height: 200,
+    borderRadius: 30,
+    marginBottom: 20,
+  },
   saveButtonText: {
     color: "#FFF",
     fontSize: 18,
@@ -312,6 +336,32 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     color: "#FFF",
     fontSize: 18,
+  },
+  profileImage: {
+    position: 'absolute',
+    top: 160,
+    left: 20,
+    width: 120,
+    height: 120,
+    borderRadius: 100,
+    borderWidth: 5,
+    borderColor: '#fff',
+  },
+  editIconContainer: {
+    position: 'absolute',
+    bottom: -(height * 0.35),
+    left: 100,
+    backgroundColor: 'white',
+    borderRadius: 50,
+    padding: 4,
+  },
+  editIcon: {
+    position: 'absolute',
+    bottom: -(height * 0.25),
+    right: 10,
+    backgroundColor: 'white',
+    padding: 4,
+    borderRadius: 50,
   },
 });
 

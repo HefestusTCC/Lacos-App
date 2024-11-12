@@ -15,6 +15,7 @@ import SERVER_IP from "../../config/serverConfig";
 const App = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  
   const handleSignUp = async () => {
     if (!email || !password) {
       Alert.alert("Por favor, preencha todos os campos.");

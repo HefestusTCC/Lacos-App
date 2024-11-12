@@ -13,7 +13,7 @@ import ListaComunidades from '../screens/ListaComunidades/index.js';
 import Adicionar_Comunidade from '../screens/Adicionar_Comunidade/index.js';
 import Editar_Comunidade from '../screens/Editar_Comunidade/index.js';
 import Postar from '../screens/Postar/index.js';
-
+import PerfilOutraPessoa from '../screens/PerfilOutraPessoa/index.js';
 export default function App() {
     const stack = createStackNavigator();
     return (
@@ -39,6 +39,14 @@ export default function App() {
                 <stack.Screen
                     name="Perfil"
                     component={Perfil}
+                    options={{
+                        title: '',
+                        headerShown: false
+                    }}
+                ></stack.Screen>
+                <stack.Screen
+                    name="PerfilOutraPessoa"
+                    component={PerfilOutraPessoa}
                     options={{
                         title: '',
                         headerShown: false

@@ -4,6 +4,7 @@ import { View, Text, Image, TextInput, StyleSheet, TouchableOpacity, ScrollView,
 import * as SecureStore from 'expo-secure-store';
 import { AntDesign } from '@expo/vector-icons';
 import api from '../../config/api.js';
+import BottomMenu from '../../components/BottomMenu';
 
 const { width, height } = Dimensions.get('window');
 
@@ -207,10 +208,12 @@ export default function Timeline({ navigation }) {
                 {/* Seção de Publicação */}
                 <View style={styles.newPublication}>
                     <View style={styles.header}>
-                        <Image
-                            source={{ uri: post.author.profilePictureURL }}
-                            style={styles.userImage}
-                        />
+                        <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', { userId: post.author.id })}>
+                            <Image
+                                source={{ uri: post.author.profilePictureURL }}
+                                style={styles.userImage}
+                            />
+                        </Pressable>
                         <View>
                             <Text style={styles.userName}>{post.author.name}</Text>
                             <Text style={styles.userHandle}>@{post.author.username}</Text>
@@ -223,7 +226,7 @@ export default function Timeline({ navigation }) {
                     {post.image != null ? <Image
                         source={{ uri: post.image }}
                         style={styles.publicationImage}
-                        // Abre o modal de comentários ao pressionar a imagem
+                    // Abre o modal de comentários ao pressionar a imagem
                     /> : null}
 
                     {/* LIKE BUTTON */}
@@ -299,8 +302,12 @@ export default function Timeline({ navigation }) {
                 const feedData = await getFeed();
                 setPosts(feedData); // Adiciona novos posts à lista existente
             };
+            const jsonString = SecureStore.getItem("user");
+            const storedUser = JSON.parse(jsonString);
+            setUserData(storedUser)
             fetchFeed();
         }, [])
+
     );
 
     return (
@@ -322,7 +329,7 @@ export default function Timeline({ navigation }) {
             <View style={styles.profileSection}>
                 <Pressable onPress={() => navigation.navigate('Perfil')}>
                     <Image
-                        source={{ uri: userData.profilePictureUrl }}
+                        source={{ uri: userData.profilePictureURL }}
                         style={styles.profileImage}
                     />
                 </Pressable>
@@ -339,11 +346,11 @@ export default function Timeline({ navigation }) {
                 <Text style={styles.sectionTitle}>Comunidades</Text>
                 <View style={styles.communitiesRow}>
                     <Pressable style={styles.communityCard} onPress={() => navigation.navigate("ListaComunidades")}>
-                            <Image
-                                source={{ uri: 'https://cdn-icons-png.flaticon.com/512/3090/3090423.png' }}
-                                style={styles.communityImage}
-                            />
-                            <Text style={[styles.communityName, { textAlign: 'center' }]}>Listar Comunidades</Text>
+                        <Image
+                            source={{ uri: 'https://cdn-icons-png.flaticon.com/512/3090/3090423.png' }}
+                            style={styles.communityImage}
+                        />
+                        <Text style={[styles.communityName, { textAlign: 'center' }]}>Listar Comunidades</Text>
                     </Pressable>
                     <Pressable style={styles.communityCard} onPress={() => navigation.navigate("Adicionar_Comunidade")}>
                         <Image
@@ -374,7 +381,9 @@ export default function Timeline({ navigation }) {
                     <Text style={styles.menuItem}>Sair</Text>
                 </View>
             )}
+            <BottomMenu></BottomMenu>
         </View>
+
     );
 }
 

@@ -22,7 +22,7 @@ const Adicionar_Comunidade = ({ navigation }) => {
     try{
       let response = await api.post('/community', communityData);
       if (response.status == 201){
-        Alert.alert("Comunidade criada com sucesso");
+        Alert.alert("Comunidade criada com sucesso. Sua comunidade será aprovada por um administrador!");
         navigation.navigate("ListaComunidades");
       }
 
