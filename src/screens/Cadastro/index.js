@@ -67,7 +67,7 @@ const App = ({ navigation }) => {
 
   const handleSignUp = async () => {
     if (!email || !username || !fullName || !password || !selectedCourse || !selectedEtec || selectedCourse == 'Nenhuma') {
-      console.log(createUserData);
+      
       Alert.alert("Por favor, preencha todos os campos.");
       return;
     }
@@ -85,16 +85,15 @@ const App = ({ navigation }) => {
 
     try {
       const response = await axios.post(`${SERVER_IP}/users/register`, createUserData);
-      console.log(response);
       if (response.status === 201) {
         Alert.alert("Usuário criado com sucesso!");
+        navigation.navigate('Login');
         setEmail("");
         setUsername("");
         setFullName("");
         selectedEtec("");
         setPassword("");
         setCourse("");
-        navigation.navigate('Login');
       } else {
         Alert.alert("Erro ao criar usuário. Tente novamente.");
       }
@@ -179,7 +178,7 @@ const App = ({ navigation }) => {
       />
 
       <View style={styles.containerButton}>
-        <Text>Já tem conta? <Pressable onPress={() => navigation.navigate('Login')} style={styles.ancora}><Text>Faça login.</Text></Pressable></Text>
+        <Text>Já tem conta? <Pressable onPress={() => navigation.goBack()} style={styles.ancora}><Text>Faça login.</Text></Pressable></Text>
       </View>
       <View style={styles.buttonContainer}>
         <Button title="Cadastrar" onPress={handleSignUp} color="#FF6E15" />
@@ -244,7 +243,7 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   picker: {
-    height: 40,
+    height: 50,
     borderRadius: 8,
     color: "#000",
   },

@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { View, Text, Image, TextInput, StyleSheet, TouchableOpacity, ScrollView, Pressable, Alert, Modal, Dimensions, FlatList } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { AntDesign } from '@expo/vector-icons';
-
+import BottomMenuComunidade from '../../components/ComunidadeMenu';
 import api from '../../config/api';
 const { width, height } = Dimensions.get('window');
 
@@ -207,7 +207,9 @@ const TimelineComunidade = ({ navigation, route }) => {
     return (
       <>
         <View style={styles.commentContainer}>
-          <Image source={{ uri: comment.author.profilePictureURL }} style={styles.commentUserImage} />
+          <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', { userId: comment.author.id })}>
+            <Image source={{ uri: comment.author.profilePictureURL }} style={styles.commentUserImage} />
+          </Pressable>
           <View>
             <Text style={styles.userName}>{comment.author.name}</Text>
             <Text style={styles.userHandle}>@{comment.author.username}</Text>
@@ -231,10 +233,12 @@ const TimelineComunidade = ({ navigation, route }) => {
         {/* Seção de Publicação */}
         <View style={styles.newPublication}>
           <View style={styles.header}>
-            <Image
-              source={{ uri: post.author.profilePictureURL }}
-              style={styles.userImage}
-            />
+            <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', { userId: post.author.id })}>
+              <Image
+                source={{ uri: post.author.profilePictureURL }}
+                style={styles.userImage}
+              />
+            </Pressable>
             <View>
               <Text style={styles.userName}>{post.author.name}</Text>
               <Text style={styles.userHandle}>@{post.author.username}</Text>
@@ -337,30 +341,46 @@ const TimelineComunidade = ({ navigation, route }) => {
     }, [])
   );
 
-
+  console.log(comunidade)
   return (
 
     <View style={styles.container}>
       <View style={styles.headerBanner}>
-      <View style={styles.nav}>
-                    <View style={styles.navButton}>
-                        <Pressable onPress={() => navigation.navigate('Timeline')}>
-                            <Image
-                                source={require("../../../assets/voltar.png")}
-                                style={styles.voltar}
-                            />
-                        </Pressable>
-                    </View>
-                </View>
-        <Text style={styles.headerTitleBanner}>{comunidade.name}</Text>
-        <Text style={styles.headerMember}>{comunidade.memberCount} membro(s)</Text>
+        <Image
+          source={{ uri: comunidade.bannerUrl }}
+          style={styles.headerBannerImage}
+        ></Image>
+        <View style={styles.nav}>
+          <View style={styles.navButton}>
+            <Pressable onPress={() => navigation.navigate('Timeline')}>
+              <Image
+                source={require("../../../assets/voltar.png")}
+                style={styles.voltar}
+              />
+            </Pressable>
+          </View>
+        </View>
+        <View>
+        </View>
+        <Image
+          source={{ uri: comunidade.communityImageUrl }}
+          style={styles.imagemComunidade}
+        />
+        <View>
+          <Text style={styles.headerTitleBanner}>{comunidade.name}</Text>
+          <Text style={styles.headerMember}>{comunidade.memberCount} membro(s)</Text>
+        </View>
+        <View>
+          {/* <Pressable style={styles.botaoEntrar}><Text style={{color: 'white', fontSize: 20}}>Entrar</Text></Pressable> */}
+        </View>
       </View>
-      <FlatList
+      {posts.length === 0 ? <Text style={{ textAlign: 'center', marginTop: 10, fontSize: 15 }}>A comunidade não possui posts. Crie um!</Text> : <FlatList
         data={posts}
         renderItem={renderPosts}
         keyExtractor={item => item.id}
         style={styles.feed}
-      />
+      />}
+      <BottomMenuComunidade idComunidade={idComunidade} />
     </View>
   );
 };
@@ -370,37 +390,51 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   headerBanner: {
-    width:'100%',
-    height:'28%',
-    backgroundColor: '#f58523',
+    width: '100%',
+    height: '28%',
+  },
+  headerBannerImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute'
   },
   headerTitleBanner: {
     fontSize: 27,
     color: '#fff',
     fontWeight: '400',
-    marginTop:'18%',
-    marginLeft:'5%',
+    marginTop: '18%',
+    marginLeft: '25%',
+  },
+  imagemComunidade: {
+    height: 75,
+    width: 75,
+    position: 'absolute',
+    marginTop: '35%',
+    marginLeft: '2%',
+    borderRadius: 100,
+    borderWidth: 1,
+    borderColor: 'white'
   },
   headerMember: {
     fontSize: 15,
     color: '#fcc195',
-    marginLeft:'5%',
+    marginLeft: '25%',
   },
   nav: {
     flexDirection: 'row',
     alignItems: 'left',
-    marginTop:'12%',
-    marginLeft:'5%'
+    marginTop: '12%',
+    marginLeft: '5%'
   },
 
-navButton: {
+  navButton: {
     flex: 1,
     alignItems: 'left',
-},
-voltar: {
+  },
+  voltar: {
     width: 22,
     height: 22,
-},
+  },
   saveButton: {
     padding: 1,
   },
@@ -718,6 +752,20 @@ voltar: {
   comments: {
     maxHeight: 200
   },
+  botaoEntrar: {
+    display: 'flex',
+    width: '25%',
+    height: 40,
+    marginLeft: width * 0.70,
+    marginTop: -10,
+    backgroundColor: '#ff6f00',
+    textAlign: 'center',
+    alignItems: 'center'
+    , justifyContent: 'center',
+    borderRadius: 10,
+    color: 'white'
+
+  }
 });
 
 export default TimelineComunidade;

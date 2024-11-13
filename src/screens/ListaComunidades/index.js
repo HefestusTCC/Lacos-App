@@ -2,7 +2,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useState, useCallback } from 'react';
 import { View, Text, Image, StyleSheet, FlatList, Pressable, Alert, Dimensions, Modal, TextInput, Button } from 'react-native';
 import api from '../../config/api.js';
-
+import BottomMenu from '../../components/BottomMenu';
 const { width, height } = Dimensions.get('window');
 
 export default function ({ navigation }) {
@@ -86,7 +86,7 @@ export default function ({ navigation }) {
                     <View style={styles.sectionTitleContainer}>
                         <View style={styles.titleContainer}>
                             <Text style={styles.sectionTitle}>Comunidades</Text>
-                            <Pressable onPress={() => navigation.navigate('Adicionar_Comunidade')}>
+                            <Pressable onPress={() => navigation.navigate('Comunidades')}>
                                 <Image
                                     source={require("../../../assets/adicionar.png")}
                                     style={styles.adicionar}
@@ -135,6 +135,7 @@ export default function ({ navigation }) {
                     </View>
                 </View>
             </Modal>
+            <BottomMenu></BottomMenu>
         </>
     );
 }
@@ -175,8 +176,8 @@ const styles = StyleSheet.create({
         height: 22,
     },
     adicionar: {
-        width: 24,
-        height: 24,
+        width: 35,
+        height: 35,
     },
     communitySection: {
         marginTop: height * 0.03,
@@ -216,7 +217,7 @@ const styles = StyleSheet.create({
     communityImage: {
         width: width * 0.25,
         height: width * 0.25,
-        borderRadius: 10,
+        borderRadius: 100,
     },
     communityName: {
         textAlign: 'center',

@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   createButton: {
-    backgroundColor: '#ff6347', // Cor de destaque para o botão de criar
+    backgroundColor: '#ff7f00', // Cor de destaque para o botão de criar
     width: 60,
     height: 60,
     borderRadius: 30,

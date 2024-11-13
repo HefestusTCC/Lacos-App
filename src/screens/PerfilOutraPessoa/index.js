@@ -5,7 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
 import api from '../../config/api';
 const { width, height } = Dimensions.get('window');
-
+import BottomMenu from '../../components/BottomMenu';
 const PerfilOutraPessoa = ({ navigation, route }) => {
 
   const userId = route?.params?.userId;
@@ -164,7 +164,9 @@ const PerfilOutraPessoa = ({ navigation, route }) => {
     return (
       <>
         <View style={styles.commentContainer}>
-          <Image source={{ uri: comment.author.profilePictureURL }} style={styles.commentUserImage} />
+          <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', { userId: comment.author.id })}>
+            <Image source={{ uri: comment.author.profilePictureURL }} style={styles.commentUserImage} />
+          </Pressable>
           <View>
             <Text style={styles.userName}>{comment.author.name}</Text>
             <Text style={styles.userHandle}>@{comment.author.username}</Text>
@@ -188,7 +190,7 @@ const PerfilOutraPessoa = ({ navigation, route }) => {
         {/* Seção de Publicação */}
         <View style={styles.newPublication}>
           <View style={styles.header}>
-            <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', {userId: post.author.id})}>
+            <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', { userId: post.author.id })}>
               <Image
                 source={{ uri: post.author.profilePictureURL }}
                 style={styles.userImage}
@@ -294,7 +296,7 @@ const PerfilOutraPessoa = ({ navigation, route }) => {
         setUser(data);
         if (data.posts) {
           setPosts(data.posts); // Defina os posts aqui apenas quando estiverem disponíveis
-      
+
         }
       }
       profileData();
@@ -320,6 +322,7 @@ const PerfilOutraPessoa = ({ navigation, route }) => {
       <View style={styles.infoContainer}>
         <Text style={styles.name}>{user.name}</Text>
         <Text style={styles.title}>{user.course}</Text>
+        <Text></Text>
         <Text style={styles.ct}>{user.school}</Text>
         <Text style={styles.quote}>{user.bio}</Text>
       </View>
@@ -336,8 +339,6 @@ const PerfilOutraPessoa = ({ navigation, route }) => {
           nestedScrollEnabled={true}  // O conteúdo pode expandir
         />
       </View>
-
-
     </ScrollView>
   );
 };

@@ -5,7 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
 import api from '../../config/api';
 const { width, height } = Dimensions.get('window');
-
+import BottomMenu from '../../components/BottomMenu';
 const ProfileScreen = ({ navigation }) => {
 
   const [user, setUser] = useState({
@@ -191,7 +191,9 @@ const ProfileScreen = ({ navigation }) => {
     return (
       <>
         <View style={styles.commentContainer}>
-          <Image source={{ uri: comment.author.profilePictureURL }} style={styles.commentUserImage} />
+          <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', { userId: comment.author.id })}>
+            <Image source={{ uri: comment.author.profilePictureURL }} style={styles.commentUserImage} />
+          </Pressable>
           <View>
             <Text style={styles.userName}>{comment.author.name}</Text>
             <Text style={styles.userHandle}>@{comment.author.username}</Text>
@@ -346,6 +348,7 @@ const ProfileScreen = ({ navigation }) => {
       <View style={styles.infoContainer}>
         <Text style={styles.name}>{user.name}</Text>
         <Text style={styles.title}>{user.course}</Text>
+        <Text></Text>
         <Text style={styles.ct}>{user.school}</Text>
         <Text style={styles.quote}>{user.bio}</Text>
       </View>
@@ -360,18 +363,16 @@ const ProfileScreen = ({ navigation }) => {
 
       {/* Publicação */}
       <Text style={styles.Publication}>PUBLICAÇÕES</Text>
-      <View style={{ flex: 1 }}>  
+      <View style={{ flex: 1 }}>
         <FlatList
           data={posts}
           renderItem={renderPosts}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={{ flexGrow: 1 }}
-          style={{height: '100%', width: '100%'}}
+          style={{ height: '100%', width: '100%' }}
           nestedScrollEnabled={true}  // O conteúdo pode expandir
         />
       </View>
-
-
     </ScrollView>
   );
 };
@@ -379,7 +380,7 @@ const ProfileScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    backgroundColor: "#fff",
+    backgroundColor: "white",
   },
   voltar: {
     position: "absolute",

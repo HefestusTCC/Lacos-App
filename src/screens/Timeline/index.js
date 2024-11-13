@@ -184,7 +184,9 @@ export default function Timeline({ navigation }) {
         return (
             <>
                 <View style={styles.commentContainer}>
-                    <Image source={{ uri: comment.author.profilePictureURL }} style={styles.commentUserImage} />
+                    <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', { userId: comment.author.id })}>
+                        <Image source={{ uri: comment.author.profilePictureURL }} style={styles.commentUserImage} />
+                    </Pressable>
                     <View>
                         <Text style={styles.userName}>{comment.author.name}</Text>
                         <Text style={styles.userHandle}>@{comment.author.username}</Text>
@@ -236,7 +238,7 @@ export default function Timeline({ navigation }) {
                     </View>
 
                     {/* Modal para Comentários */}
-                    <Modal animationType="slide" transparent={true} visible={visibleCommentsForPost === post.id} >
+                    <Modal animationType="fade" transparent={true} visible={visibleCommentsForPost === post.id} >
                         <View style={styles.modalBackground}>
                             <View style={styles.modalContainer}>
                                 <Text style={styles.modalTitle}>Comentários</Text>
@@ -267,7 +269,7 @@ export default function Timeline({ navigation }) {
                                 <TouchableOpacity onPress={() => handleAddComment(post.id)} style={styles.addCommentButton}>
                                     <Text style={styles.addCommentButtonText}>Enviar</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={() => setVisibleCommentsForPost(null)} style={styles.closeButton}>
+                                <TouchableOpacity onPress={() => closeCommentsModal()} style={styles.closeButton}>
                                     <Text style={styles.closeButtonText}>Fechar</Text>
                                 </TouchableOpacity>
                             </View>
@@ -321,11 +323,6 @@ export default function Timeline({ navigation }) {
 
                 <Image source={require("../../../assets/logo.png")} style={styles.logo} />
             </View>
-
-            <Pressable style={styles.newButton} onPress={() => navigation.navigate('Postar')}>
-                <Text style={styles.newButtonText}>Novo</Text>
-            </Pressable>
-
             <View style={styles.profileSection}>
                 <Pressable onPress={() => navigation.navigate('Perfil')}>
                     <Image
@@ -339,33 +336,6 @@ export default function Timeline({ navigation }) {
                     </Text>
                     <Text style={styles.courseText}>{userData.course}</Text>
                     <Text style={styles.bioText}>{userData.bio}</Text>
-                </View>
-            </View>
-
-            <View style={styles.communitySection}>
-                <Text style={styles.sectionTitle}>Comunidades</Text>
-                <View style={styles.communitiesRow}>
-                    <Pressable style={styles.communityCard} onPress={() => navigation.navigate("ListaComunidades")}>
-                        <Image
-                            source={{ uri: 'https://cdn-icons-png.flaticon.com/512/3090/3090423.png' }}
-                            style={styles.communityImage}
-                        />
-                        <Text style={[styles.communityName, { textAlign: 'center' }]}>Listar Comunidades</Text>
-                    </Pressable>
-                    <Pressable style={styles.communityCard} onPress={() => navigation.navigate("Adicionar_Comunidade")}>
-                        <Image
-                            source={{ uri: 'https://cdn-icons-png.flaticon.com/512/60/60732.png' }}
-                            style={styles.communityImage}
-                        />
-                        <Text style={[styles.communityName, { textAlign: 'center' }]}>Criar comunidade</Text>
-                    </Pressable>
-                    {/* <View style={styles.communityCard}>
-                        <Image
-                            source={{ uri: 'https://www.asuris.com.br/upload/blog/QhEb6JuOjOogFNZSINwpOaKn9bEJbEVq3Y0iCGu1.jpg' }}
-                            style={styles.communityImage}
-                        />
-                        <Text style={[styles.communityName, {textAlign: 'center'}]}>Minhas comunidades</Text>
-                    </View> */}
                 </View>
             </View>
             <FlatList
@@ -390,7 +360,7 @@ export default function Timeline({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: width * 0.05,
+        padding: width * 0.02,
         backgroundColor: '#fff',
     },
     searchBarContainer: {

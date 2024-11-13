@@ -14,6 +14,8 @@ import Adicionar_Comunidade from '../screens/Adicionar_Comunidade/index.js';
 import Editar_Comunidade from '../screens/Editar_Comunidade/index.js';
 import Postar from '../screens/Postar/index.js';
 import PerfilOutraPessoa from '../screens/PerfilOutraPessoa/index.js';
+import Notificacoes from '../screens/Notificacoes/index.js';
+import RespostaDenuncia from '../screens/RespostaDenuncia/index.js';
 export default function App() {
     const stack = createStackNavigator();
     return (
@@ -68,9 +70,25 @@ export default function App() {
                         headerShown: false
                     }}
                 ></stack.Screen>
+                                <stack.Screen
+                    name="RespostaDenuncia"
+                    component={RespostaDenuncia}
+                    options={{
+                        title: '',
+                        headerShown: false
+                    }}
+                ></stack.Screen>
                 <stack.Screen
                     name="Timeline"
                     component={Timeline}
+                    options={{
+                        title: '',
+                        headerShown: false
+                    }}
+                ></stack.Screen>
+                <stack.Screen
+                    name="Notificacoes"
+                    component={Notificacoes}
                     options={{
                         title: '',
                         headerShown: false
