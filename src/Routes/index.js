@@ -16,11 +16,20 @@ import Postar from '../screens/Postar/index.js';
 import PerfilOutraPessoa from '../screens/PerfilOutraPessoa/index.js';
 import Notificacoes from '../screens/Notificacoes/index.js';
 import RespostaDenuncia from '../screens/RespostaDenuncia/index.js';
+import PostDetailScreen from '../screens/PostDetailScreen/index.js';
 export default function App() {
     const stack = createStackNavigator();
     return (
         <NavigationContainer>
             <stack.Navigator>
+                <stack.Screen
+                    name="PostDetailScreen"
+                    component={PostDetailScreen}
+                    options={{
+                        title: '',
+                        headerShown: false
+                    }}
+                ></stack.Screen>
                 <stack.Screen
                     name="Login"
                     component={Login}
@@ -70,7 +79,7 @@ export default function App() {
                         headerShown: false
                     }}
                 ></stack.Screen>
-                                <stack.Screen
+                <stack.Screen
                     name="RespostaDenuncia"
                     component={RespostaDenuncia}
                     options={{
