@@ -12,7 +12,10 @@ import {
     Modal,
     Dimensions
 } from 'react-native';
-const {width, height} = Dimensions.get('window');
+import LikeButton from '../../components/LikeButton';
+import CommentButtonDetails from '../../components/CommentButtonDetails';
+import PostMenuDialog from '../../components/PostMenuDialog';
+const { width, height } = Dimensions.get('window');
 // Simulação de dados
 const postData = {
     "id": 21,
@@ -86,7 +89,7 @@ const postData = {
     }
 };
 
-const PostDetailScreen = ({navigation}) => {
+const PostDetailScreen = ({ navigation }) => {
 
     const [post, setPost] = useState(postData);
 
@@ -152,9 +155,7 @@ const PostDetailScreen = ({navigation}) => {
                         <Text style={styles.userName}>{post.author.name}</Text>
                         <Text style={styles.userHandle}>@{post.author.username}</Text>
                     </View>
-                    <Pressable onPress={handleMenu} style={styles.optionsButton}>
-                        <Text style={styles.moreOptions}>...</Text>
-                    </Pressable>
+                    <PostMenuDialog post={post}></PostMenuDialog>
                 </View>
                 <Text style={styles.publicationText}>{post.content}</Text>
                 {post.image != null ? <Image
@@ -164,9 +165,32 @@ const PostDetailScreen = ({navigation}) => {
                 /> : null}
 
                 {/* LIKE BUTTON */}
+
+
+            </View>
+
+
+            <View style={styles.actions}>
                 <View style={styles.likeButtonContainer}>
-          
+                    <LikeButton post={post}></LikeButton>
                 </View>
+                <View style={styles.likeButtonContainer}>
+                    <CommentButtonDetails post={post}></CommentButtonDetails>
+                </View>
+            </View>
+
+            <View style={styles.commentInputContainer}>
+                <TextInput
+                    style={styles.commentInput}
+                    placeholder="Adicione um comentário..."
+                    value={newComment}
+                    onChangeText={setNewComment}
+                />
+                <TouchableOpacity style={styles.addCommentButton} onPress={handleAddComment}>
+                    <Text style={styles.addCommentText}>Postar</Text>
+                </TouchableOpacity>
+            </View>
+            <View style={styles.postActions}>
 
             </View>
             {/* Cabeçalho
@@ -370,7 +394,6 @@ const styles = StyleSheet.create({
     likeButtonContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginVertical: 10,
     },
     modalBackground: {
         flex: 1,

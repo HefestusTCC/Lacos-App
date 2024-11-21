@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,35 +7,64 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  Pressable
 } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
+const PostMenuDialog = ({ post }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const jsonString = SecureStore.getItem("user");
+  const storedUser = JSON.parse(jsonString);
+  const [userData, setUserData] = useState({
+    id: storedUser.id,
+    name: storedUser.name,
+    username: storedUser.username,
+    profilePictureUrl: storedUser.profilePictureURL,
+    backgroundPictureUrl: storedUser.backgroundPictureURL,
+    bio: storedUser.bio,
+    school: storedUser.school,
+    course: storedUser.course
+  });
 
-const PostMenuDialog = ({ isVisible, onClose, options }) => {
-  
+  const options = post.author.id == userData.id ? ['Editar', 'Excluir', 'Denunciar'] : ['Denunciar'];
   const handleOptionPress = (option) => {
     Alert.alert(`Você selecionou: ${option}`);
-    onClose(); 
+    onClose();
   };
 
+  const onClose = () => {
+    setIsVisible(!isVisible);
+  }
+
+  const openMenu = () => {
+    setIsVisible(true);
+  }
+
   return (
-    <Modal
-      transparent={true}
-      visible={isVisible}
-      animationType="fade"
-      onRequestClose={onClose}
-    >
-      <TouchableOpacity style={styles.overlay} onPress={onClose} />
-      <View style={styles.modalContent}>
-        {options.map((option, index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.optionButton}
-            onPress={() => handleOptionPress(option)}
-          >
-            <Text style={styles.optionText}>{option}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </Modal>
+
+    <>
+      <Pressable onPress={openMenu} style={styles.optionsButton}>
+        <Text style={styles.moreOptions}>...</Text>
+      </Pressable>
+      <Modal
+        transparent={true}
+        visible={isVisible}
+        animationType="fade"
+        onRequestClose={onClose}
+      >
+        <TouchableOpacity style={styles.overlay} onPress={onClose} />
+        <View style={styles.modalContent}>
+          {options.map((option, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.optionButton}
+              onPress={() => handleOptionPress(option)}
+            >
+              <Text style={styles.optionText}>{option}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </Modal>
+    </>
   );
 };
 
@@ -64,6 +94,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#007bff',
+  },
+  optionsButton: {
+    marginLeft: 'auto',
+  },
+  moreOptions: {
+    fontSize: 20,
   },
 });
 

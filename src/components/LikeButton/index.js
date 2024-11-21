@@ -8,13 +8,11 @@ import api from '../../config/api.js';
 
 
 const LikeButton = ({ post }) => {
-    const [liked, setLiked] = useState(didUserLikePost(post));
-    const [likeCount, setLikeCount] = useState(post.likeCount);
-
     const didUserLikePost = (post) => {
         return post.likes.some(like => like.user.id === userData.id);
     };
-
+    const [liked, setLiked] = useState(didUserLikePost(post));
+    const [likeCount, setLikeCount] = useState(post.likeCount);
     const like = async (id, alreadyLiked) => {
         try {
             const response = await api.post(`/post/${id}/like`);
@@ -42,7 +40,7 @@ const LikeButton = ({ post }) => {
             <TouchableOpacity onPress={() => toggleLike(post.id, liked)}>
                 <AntDesign
                     name={liked ? 'heart' : 'hearto'}
-                    size={32}
+                    size={24}
                     color='orange'
                     margin={20}
                 />
