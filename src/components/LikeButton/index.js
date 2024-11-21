@@ -6,11 +6,22 @@ import { AntDesign } from '@expo/vector-icons';
 import api from '../../config/api.js';
 
 
-
 const LikeButton = ({ post }) => {
     const didUserLikePost = (post) => {
         return post.likes.some(like => like.user.id === userData.id);
     };
+    const jsonString = SecureStore.getItem("user");
+    const storedUser = JSON.parse(jsonString);
+    const [userData, setUserData] = useState({
+        id: storedUser.id,
+        name: storedUser.name,
+        username: storedUser.username,
+        profilePictureUrl: storedUser.profilePictureURL,
+        backgroundPictureUrl: storedUser.backgroundPictureURL,
+        bio: storedUser.bio,
+        school: storedUser.school,
+        course: storedUser.course
+    });
     const [liked, setLiked] = useState(didUserLikePost(post));
     const [likeCount, setLikeCount] = useState(post.likeCount);
     const like = async (id, alreadyLiked) => {

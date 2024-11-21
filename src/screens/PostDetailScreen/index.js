@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
     View,
     Text,
@@ -12,133 +12,61 @@ import {
     Modal,
     Dimensions
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import LikeButton from '../../components/LikeButton';
 import CommentButtonDetails from '../../components/CommentButtonDetails';
 import PostMenuDialog from '../../components/PostMenuDialog';
+import Comment from '../../components/Comment';
+import api from '../../config/api';
 const { width, height } = Dimensions.get('window');
-// Simulação de dados
-const postData = {
-    "id": 21,
-    "author": {
-        "id": 4,
-        "name": "José Pedro",
-        "email": "jose.roberto3@etec.sp.gov.br",
-        "username": "pecraxy",
-        "profilePictureURL": "https://res.cloudinary.com/dl85nlwfe/image/upload/v1731720639/x7y5tma7lu5iou5pcvmg.jpg",
-        "backgroundPictureURL": "https://res.cloudinary.com/dl85nlwfe/image/upload/v1731458216/slxbnizbovmiv5hzpxvy.png",
-        "bio": "zé.",
-        "school": "Etec de Cidade Tiradentes (Cidade Tiradentes)",
-        "course": "Desenvolvimento de Sistemas"
-    },
-    "content": "bolsonaro neles",
-    "image": "https://res.cloudinary.com/dl85nlwfe/image/upload/v1731720776/mexxqu4p43zrtjsahbo9.jpg",
-    "video": null,
-    "likeCount": 0,
-    "commentCount": 0,
-    "createdAt": null,
-    "categories": [],
-    "comments": [],
-    "likes": [],
-    "community": {
-        "id": 5,
-        "creator": {
-            "id": 4,
-            "name": "José Pedro",
-            "email": "jose.roberto3@etec.sp.gov.br",
-            "username": "pecraxy",
-            "profilePictureURL": "https://res.cloudinary.com/dl85nlwfe/image/upload/v1731720639/x7y5tma7lu5iou5pcvmg.jpg",
-            "backgroundPictureURL": "https://res.cloudinary.com/dl85nlwfe/image/upload/v1731458216/slxbnizbovmiv5hzpxvy.png",
-            "bio": "zé.",
-            "school": "Etec de Cidade Tiradentes (Cidade Tiradentes)",
-            "course": "Desenvolvimento de Sistemas"
-        },
-        "name": "Os do Job",
-        "description": "Comunidade para os apreciadores do Job.",
-        "bannerUrl": "https://www.solidbackgrounds.com/images/1600x900/1600x900-black-solid-color-background.jpg",
-        "communityImageUrl": "https://cdn-icons-png.flaticon.com/512/992/992541.png",
-        "categories": [
-            {
-                "id": 1,
-                "description": "Tecnologia"
-            },
-            {
-                "id": 4,
-                "description": "Administração"
-            }
-        ],
-        "status": "ativo",
-        "memberCount": 2,
-        "members": [
-            {
-                "user": {
-                    "id": 4,
-                    "name": "José Pedro",
-                    "email": "jose.roberto3@etec.sp.gov.br",
-                    "username": "pecraxy",
-                    "profilePictureURL": "https://res.cloudinary.com/dl85nlwfe/image/upload/v1731720639/x7y5tma7lu5iou5pcvmg.jpg",
-                    "backgroundPictureURL": "https://res.cloudinary.com/dl85nlwfe/image/upload/v1731458216/slxbnizbovmiv5hzpxvy.png",
-                    "bio": "zé.",
-                    "school": "Etec de Cidade Tiradentes (Cidade Tiradentes)",
-                    "course": "Desenvolvimento de Sistemas"
-                },
-                "status": "ativo",
-                "joinedAt": "2024-11-11T20:28:31Z"
-            }
-        ],
-        "createdAt": "2024-11-11T20:28:31Z"
-    }
-};
 
-const PostDetailScreen = ({ navigation }) => {
 
-    const [post, setPost] = useState(postData);
+const PostDetailScreen = ({ navigation, id }) => {
 
+    const [post, setPost] = useState();
     const [newComment, setNewComment] = useState('');
 
-    const handleMenu = () => {
-        const options =
-            post.author.name === post.author.name
-                ? ['Editar', 'Excluir', 'Denunciar']
-                : ['Denunciar'];
+    const createComment = async (id) => {
 
-        Alert.alert(
-            'Opções',
-            null,
-            options.map((option) => ({
-                text: option,
-                onPress: () => console.log(`${option} selecionado`),
-            }))
-        );
-    };
-
-    const handleAddComment = () => {
-        if (newComment.trim()) {
-            const updatedComments = [
-                ...post.comments,
-                {
-                    id: `c${post.comments.length + 1}`,
-                    user,
-                    text: newComment,
-                },
-            ];
-            setPost({ ...post, comments: updatedComments });
-            setNewComment('');
+        const commentData = {
+            "content": newComment
         }
+        try {
+            const response = await api.post(`/post/${id}/comment`, commentData);
+            if (response.status == 201) {
+                Alert.alert("Comentário criado com sucesso");
+                return response.data.data;
+            }
+        } catch (error) {
+            Alert.alert("Erro ao criar comentário", error.response.data.message)
+        }
+    }
+
+    const handleAddComment = async () => {
+        if (!newComment) {
+            Alert.alert("Não é possível criar um comentário vazio.");
+            return;
+        }
+        let updatedComments = await createComment(id);
+        if (updatedComments) {
+            setPost(updatedComments);
+        }
+        setNewComment('');
     };
 
-    const renderComment = ({ item }) => (
-        <View style={styles.comment}>
-            <Image
-                source={{ uri: item.user.profileImage }}
-                style={styles.commentProfileImage}
-            />
-            <View>
-                <Text style={styles.commentUser}>
-                    {item.user.name} <Text style={styles.commentHandle}>{item.user.handle}</Text>
-                </Text>
-                <Text style={styles.commentText}>{item.text}</Text>
-            </View>
-        </View>
+    useFocusEffect(
+        useCallback(() => {
+            const getPost = async (id) => {
+                try {
+                    const response = await api.get(`/post/{${id}}`);
+                    return response.data.data;
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+            const post = getPost(id);
+            setPost(post);
+        }, [navigation])
     );
 
     return (
@@ -161,12 +89,7 @@ const PostDetailScreen = ({ navigation }) => {
                 {post.image != null ? <Image
                     source={{ uri: post.image }}
                     style={styles.publicationImage}
-                // Abre o modal de comentários ao pressionar a imagem
                 /> : null}
-
-                {/* LIKE BUTTON */}
-
-
             </View>
 
 
@@ -187,12 +110,16 @@ const PostDetailScreen = ({ navigation }) => {
                     onChangeText={setNewComment}
                 />
                 <TouchableOpacity style={styles.addCommentButton} onPress={handleAddComment}>
-                    <Text style={styles.addCommentText}>Postar</Text>
+                    <Text style={styles.addCommentText}>Comentar</Text>
                 </TouchableOpacity>
             </View>
-            <View style={styles.postActions}>
-
-            </View>
+            {post.comments.length > 0 ?
+                <FlatList
+                    data={post.comments}
+                    renderItem={(item) => item ? <Comment comment={item} /> : null} // Renderiza cada comentário
+                    keyExtractor={(item) => item.id.toString()}
+                    style={styles.comments}
+                /> : <Text style={{ textAlign: 'center', margin: 5, color: 'gray' }}>Esse post não possui comentários. Comente agora!</Text>}
             {/* Cabeçalho
             <View style={styles.header}>
                 <View style={styles.userInfo}>
@@ -311,6 +238,7 @@ const styles = StyleSheet.create({
     commentInputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
+        width: '100%',
         marginBottom: 10,
     },
     commentInput: {
@@ -320,9 +248,10 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         padding: 8,
         marginRight: 10,
+        width: '100%'
     },
     addCommentButton: {
-        backgroundColor: '#007bff',
+        backgroundColor: '#f58523',
         borderRadius: 8,
         paddingVertical: 8,
         paddingHorizontal: 15,
@@ -413,21 +342,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: height * 0.02,
     },
-    commentInput: {
-        height: 40,
-        borderColor: '#ccc',
-        borderWidth: 1,
-        borderRadius: 5,
-        paddingHorizontal: 10,
-        marginTop: 10,
-    },
-    addCommentButton: {
-        backgroundColor: '#f58523',
-        padding: height * 0.02,
-        borderRadius: 10,
-        marginTop: 10,
-        alignItems: 'center',
-    },
+
     addCommentButtonText: {
         color: '#fff',
     },

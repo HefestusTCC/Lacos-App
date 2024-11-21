@@ -5,7 +5,7 @@ import * as SecureStore from 'expo-secure-store';
 import { AntDesign } from '@expo/vector-icons';
 import api from '../../config/api.js';
 import BottomMenu from '../../components/BottomMenu';
-
+import PostCard from '../../components/PostCard';
 const { width, height } = Dimensions.get('window');
 
 export default function Timeline({ navigation }) {
@@ -25,8 +25,7 @@ export default function Timeline({ navigation }) {
     const [menuVisible, setMenuVisible] = useState(false);
     const [visibleCommentsForPost, setVisibleCommentsForPost] = useState(null);
     const [posts, setPosts] = useState([]);
-    const [newComment, setNewComment] = useState('');
-    const [reportValue, setReportValue] = useState('');
+
 
     const openReportModal = (postId) => {
         setReportModal(postId);
@@ -134,7 +133,6 @@ export default function Timeline({ navigation }) {
         } catch (error) {
             Alert.alert("Erro ao criar comentário", error.response.data.message)
         }
-
     }
 
     // Componente LikeButton
@@ -340,7 +338,7 @@ export default function Timeline({ navigation }) {
             </View>
             <FlatList
                 data={posts}
-                renderItem={renderPosts}
+                renderItem={(item) => <PostCard post={item.item} navigation={navigation}></PostCard>}
                 keyExtractor={item => item.id.toString()}
                 style={styles.posts}
             />

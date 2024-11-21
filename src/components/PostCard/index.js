@@ -1,7 +1,9 @@
-import { View, Text, Image, StyleSheet, Pressable} from 'react-native';
+import { View, Text, Image, StyleSheet, Pressable, Dimensions} from 'react-native';
 import LikeButton from '../LikeButton';
 import CommentButton from '../CommentButton';
-const PostCard = ({ post }) => {
+import PostMenuDialog from '../PostMenuDialog';
+const {width, height} = Dimensions.get('window');
+const PostCard = ({ post, navigation }) => {
     return (
         <>
             {/* Seção de Publicação */}
@@ -17,9 +19,7 @@ const PostCard = ({ post }) => {
                         <Text style={styles.userName}>{post.author.name}</Text>
                         <Text style={styles.userHandle}>@{post.author.username}</Text>
                     </View>
-                    <Pressable onPress={() => openReportModal(post.id)} style={styles.optionsButton}>
-                        <Text style={styles.moreOptions}>...</Text>
-                    </Pressable>
+                    <PostMenuDialog post={post}></PostMenuDialog>
                 </View>
                 <Text style={styles.publicationText}>{post.content}</Text>
                 {post.image != null ? <Image
@@ -177,3 +177,5 @@ const styles = StyleSheet.create({
         maxHeight: 200
     },
 })
+
+export default PostCard;

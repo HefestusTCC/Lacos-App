@@ -22,14 +22,7 @@ export default function App() {
     return (
         <NavigationContainer>
             <stack.Navigator>
-                <stack.Screen
-                    name="PostDetailScreen"
-                    component={PostDetailScreen}
-                    options={{
-                        title: '',
-                        headerShown: false
-                    }}
-                ></stack.Screen>
+
                 <stack.Screen
                     name="Login"
                     component={Login}
@@ -50,6 +43,14 @@ export default function App() {
                 <stack.Screen
                     name="Perfil"
                     component={Perfil}
+                    options={{
+                        title: '',
+                        headerShown: false
+                    }}
+                ></stack.Screen>
+                <stack.Screen
+                    name="PostDetailScreen"
+                    component={PostDetailScreen}
                     options={{
                         title: '',
                         headerShown: false
