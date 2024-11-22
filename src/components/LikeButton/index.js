@@ -28,7 +28,6 @@ const LikeButton = ({ post }) => {
         try {
             const response = await api.post(`/post/${id}/like`);
             if (response.status == 200) {
-                // console.log("likes: " + JSON.stringify(response.data.data.likes));
                 return !alreadyLiked;
             }
         } catch (error) {

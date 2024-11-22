@@ -17,6 +17,7 @@ import PerfilOutraPessoa from '../screens/PerfilOutraPessoa/index.js';
 import Notificacoes from '../screens/Notificacoes/index.js';
 import RespostaDenuncia from '../screens/RespostaDenuncia/index.js';
 import PostDetailScreen from '../screens/PostDetailScreen/index.js';
+import EditarPost from '../screens/EditarPost/index.js';
 export default function App() {
     const stack = createStackNavigator();
     return (
@@ -147,6 +148,14 @@ export default function App() {
                 <stack.Screen
                     name="Postar"
                     component={Postar}
+                    options={{
+                        title: '',
+                        headerShown: false
+                    }}
+                ></stack.Screen>
+                <stack.Screen
+                    name="EditarPost"
+                    component={EditarPost}
                     options={{
                         title: '',
                         headerShown: false

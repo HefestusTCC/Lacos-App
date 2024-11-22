@@ -7,14 +7,17 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  Pressable
+  Pressable,
+  Dimensions
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-const PostMenuDialog = ({ post }) => {
+import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
+const { width, height } = Dimensions.get('window');
+const PostMenuDialog = ({ post, navigation }) => {
   const [isVisible, setIsVisible] = useState(false);
   const jsonString = SecureStore.getItem("user");
   const storedUser = JSON.parse(jsonString);
-  const [userData, setUserData] = useState({
+  const userData = {
     id: storedUser.id,
     name: storedUser.name,
     username: storedUser.username,
@@ -23,11 +26,15 @@ const PostMenuDialog = ({ post }) => {
     bio: storedUser.bio,
     school: storedUser.school,
     course: storedUser.course
-  });
+  };
 
   const options = post.author.id == userData.id ? ['Editar', 'Excluir', 'Denunciar'] : ['Denunciar'];
   const handleOptionPress = (option) => {
-    Alert.alert(`Você selecionou: ${option}`);
+    switch(option){
+      case "Editar":
+        navigation.navigate('EditarPost', {post: post})
+        break;
+    }
     onClose();
   };
 
@@ -53,15 +60,47 @@ const PostMenuDialog = ({ post }) => {
       >
         <TouchableOpacity style={styles.overlay} onPress={onClose} />
         <View style={styles.modalContent}>
-          {options.map((option, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.optionButton}
-              onPress={() => handleOptionPress(option)}
-            >
-              <Text style={styles.optionText}>{option}</Text>
-            </TouchableOpacity>
-          ))}
+          {
+            options.map((option, index) => {
+              if (option == "Editar") {
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.optionButton}
+                    onPress={() => handleOptionPress(option)}
+                  >
+                    <MaterialIcons name="edit" size={24} color="black" />
+                    <Text style={styles.optionText}>{option}</Text>
+                  </TouchableOpacity>
+                )
+              }
+              if (option == "Excluir") {
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.optionButton}
+                    onPress={() => handleOptionPress(option)}
+                  >
+                    <MaterialIcons name="delete" size={24} color="red" />
+                    <Text style={styles.optionText}>{option}</Text>
+                  </TouchableOpacity>
+                )
+              }
+              if (option == "Denunciar") {
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.optionButton}
+                    onPress={() => handleOptionPress(option)}
+                  >
+                    <FontAwesome name="flag" size={24} color="orange" />
+                    <Text style={styles.optionText}>{option}</Text>
+                  </TouchableOpacity>
+                )
+              }
+            }
+            )
+          }
         </View>
       </Modal>
     </>
@@ -86,14 +125,22 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    display: 'flex',
+    flexDirection: 'column',
   },
   optionButton: {
     paddingVertical: 10,
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '90%'
   },
   optionText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#007bff',
+    color: 'black',
+    textAlign: 'center',
+    marginLeft: 15
   },
   optionsButton: {
     marginLeft: 'auto',
@@ -101,6 +148,7 @@ const styles = StyleSheet.create({
   moreOptions: {
     fontSize: 20,
   },
+  
 });
 
 export default PostMenuDialog;
