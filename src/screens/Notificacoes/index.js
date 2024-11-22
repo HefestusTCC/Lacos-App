@@ -19,6 +19,17 @@ const Notificacoes = ({ navigation }) => {
             setLoading(false);
         }
     };
+    const goToPost = async (notification) => {
+        if (!notification.seen) {
+            try {
+                let response = await api.post(`/notifications/${notification.id}/seen`);
+
+            } catch (error) {
+                console.log(error)
+            }
+        }
+        navigation.navigate('PostDetailScreen', { id: notification.post.id });
+    }
 
     useFocusEffect(
         useCallback(() => {
@@ -55,7 +66,7 @@ const Notificacoes = ({ navigation }) => {
 
     const likeNotification = (item) => {
         return (
-            <View style={[styles.likeCardContainer, item.seen ? styles.seen : styles.unseen]}>
+            <Pressable onPress={() => goToPost(item)} style={[styles.likeCardContainer, item.seen ? styles.seen : styles.unseen]}>
                 <View style={styles.iconContainer}>
                     <FontAwesome name="heart" size={24} color="red" />
                 </View>
@@ -69,13 +80,13 @@ const Notificacoes = ({ navigation }) => {
                         <Text style={styles.postSnippet}>{item.content}</Text>
                     </View>
                 </View>
-            </View>
+            </Pressable>
         );
     }
 
     const commentNotification = (item) => {
         return (
-            <View style={[styles.likeCardContainer, item.seen ? styles.seen : styles.unseen]}>
+            <Pressable onPress={() => goToPost(item)} style={[styles.likeCardContainer, item.seen ? styles.seen : styles.unseen]}>
                 <View style={styles.iconContainer}>
                     <FontAwesome name="comment" size={24} color="black" />
                 </View>
@@ -89,7 +100,7 @@ const Notificacoes = ({ navigation }) => {
                         <Text style={styles.postSnippet}>{item.content}</Text>
                     </View>
                 </View>
-            </View>
+            </Pressable>
         );
     }
 

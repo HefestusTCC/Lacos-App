@@ -1,26 +1,49 @@
-import { View, Text, Image, StyleSheet, Pressable, Dimensions} from 'react-native';
+import { View, Text, Image, StyleSheet, Pressable, Dimensions } from 'react-native';
 import LikeButton from '../LikeButton';
 import CommentButton from '../CommentButton';
 import PostMenuDialog from '../PostMenuDialog';
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 const PostCard = ({ post, navigation }) => {
     return (
         <>
             {/* Seção de Publicação */}
-            <Pressable style={styles.newPublication} onPress={() => navigation.navigate('PostDetailScreen', {post: post})}>
-                <View style={styles.header}>
-                    <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', { userId: post.author.id })}>
-                        <Image
-                            source={{ uri: post.author.profilePictureURL }}
-                            style={styles.userImage}
-                        />
-                    </Pressable>
-                    <View>
-                        <Text style={styles.userName}>{post.author.name}</Text>
-                        <Text style={styles.userHandle}>@{post.author.username}</Text>
+            <Pressable style={styles.newPublication} onPress={() => navigation.navigate('PostDetailScreen', { id: post.id })}>
+                {post.community != null ?
+                    <View style={styles.header}>
+                        <Pressable onPress={() => navigation.navigate('TimelineComunidade', { id: post.community.id })}>
+                            <Image
+                                source={{ uri: post.community.communityImageUrl }}
+                                style={styles.communityImage}
+                            />
+                        </Pressable>
+                        <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', { userId: post.author.id })}>
+                            <Image
+                                source={{ uri: post.author.profilePictureURL }}
+                                style={[styles.userImage, { marginLeft: -width * 0.09, height: 30, width: 30, marginBottom: -height * 0.02 }]}
+                            />
+                        </Pressable>
+                        <View>
+                            <Text style={styles.communityName}>{post.community.name}</Text>
+                            <Text style={styles.userNameCommunity}>{post.author.name}</Text>
+                            <Text style={styles.userHandle}>@{post.author.username}</Text>
+                        </View>
+                        <PostMenuDialog post={post}></PostMenuDialog>
+                    </View> :
+                    <View style={styles.header}>
+                        <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', { userId: post.author.id })}>
+                            <Image
+                                source={{ uri: post.author.profilePictureURL }}
+                                style={styles.userImage}
+                            />
+                        </Pressable>
+                        <View>
+                            <Text style={styles.userName}>{post.author.name}</Text>
+                            <Text style={styles.userHandle}>@{post.author.username}</Text>
+                        </View>
+                        <PostMenuDialog post={post}></PostMenuDialog>
                     </View>
-                    <PostMenuDialog post={post}></PostMenuDialog>
-                </View>
+                }
+
                 <Text style={styles.publicationText}>{post.content}</Text>
                 {post.image != null ? <Image
                     source={{ uri: post.image }}
@@ -31,7 +54,7 @@ const PostCard = ({ post, navigation }) => {
                 {/* LIKE BUTTON */}
                 <View style={styles.likeButtonContainer}>
                     <LikeButton post={post} />
-                    <CommentButton post={post} />
+                    <CommentButton post={post} navigation={navigation} />
                 </View>
             </Pressable>
         </>
@@ -56,8 +79,21 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         marginRight: 10,
     },
+    communityImage: {
+        width: 40,
+        height: 40,
+        borderRadius: 5,
+        marginRight: 10,
+    },
     userName: {
         fontWeight: 'bold',
+    },
+    userNameCommunity: {
+
+    },
+    communityName: {
+        fontWeight: 'bold',
+        fontSize: 15
     },
     userHandle: {
         color: '#aaa',
@@ -78,7 +114,7 @@ const styles = StyleSheet.create({
     },
     likeButtonContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'space-around',
         marginVertical: 10,
     },
     modalBackground: {

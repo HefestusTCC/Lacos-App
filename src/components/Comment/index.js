@@ -23,6 +23,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         padding: 10,
+        borderTopWidth: 1,
+        borderTopColor: '#ddd',
     },
     commentUserImage: {
         width: 30,
@@ -35,6 +37,12 @@ const styles = StyleSheet.create({
     },
     commentText: {
         color: '#555',
+    },
+    userHandle: {
+        color: '#aaa',
+    },
+    userName: {
+        fontWeight: 'bold',
     },
 });
 export default Comment;

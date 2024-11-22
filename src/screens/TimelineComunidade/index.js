@@ -9,7 +9,7 @@ const { width, height } = Dimensions.get('window');
 
 
 const TimelineComunidade = ({ navigation, route }) => {
-  const idComunidade = route.params.id;
+  const idComunidade = route?.params?.id;
   const jsonString = SecureStore.getItem("user");
   const storedUser = JSON.parse(jsonString);
   const [userData, setUserData] = useState({
@@ -332,7 +332,7 @@ const TimelineComunidade = ({ navigation, route }) => {
         setComunidade(comunidade);
 
         if (comunidade.members.some(member => member.user.id == userData.id)) {
-          console.log('é da comu')
+
         } else {
           await joinCommunity();
         }
@@ -341,7 +341,6 @@ const TimelineComunidade = ({ navigation, route }) => {
     }, [])
   );
 
-  console.log(comunidade)
   return (
 
     <View style={styles.container}>
