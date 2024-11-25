@@ -1,10 +1,28 @@
-import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { View, TouchableOpacity, Text, StyleSheet, Dimensions, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-
-const BottomMenuComunidade = ({idComunidade}) => {
+import api from '../../config/api';
+const BottomMenuComunidade = ({ idComunidade }) => {
   const navigation = useNavigation();
+  const [notificationCount, setNotificationCount] = useState('');
+
+  const getNotificationCount = async () => {
+    try {
+      const response = await api.get('/notifications/count');
+      const data = response.data.data;
+      setNotificationCount(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      getNotificationCount(); // Chama a função para carregar as comunidades
+    }, [notificationCount])
+  );
 
   return (
     <View style={styles.container}>
@@ -19,13 +37,19 @@ const BottomMenuComunidade = ({idComunidade}) => {
       </TouchableOpacity>
 
       {/* Botão Criar Post */}
-      <TouchableOpacity style={[styles.button, styles.createButton]} onPress={() => navigation.navigate('Postar', {idComunidade: idComunidade})}>
+      <TouchableOpacity style={[styles.button, styles.createButton]} onPress={() => navigation.navigate('Postar', { idComunidade: idComunidade })}>
         <Icon name="add" size={28} color="#ffffff" />
       </TouchableOpacity>
 
       {/* Botão Notificações */}
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Notificacoes')}>
         <Icon name="notifications" size={28} color="#333" />
+        {
+          notificationCount > 0 ?
+            <View style={styles.bubble}>
+              <Text style={{ color: 'white', textAlign: 'center' }}>{notificationCount}</Text>
+            </View> : null
+        }
       </TouchableOpacity>
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Perfil')}>
         <Icon name="person" size={28} color="#333" />
@@ -70,6 +94,12 @@ const styles = StyleSheet.create({
   createIcon: {
     fontSize: 30,
     color: '#ffffff',
+  },
+  bubble: {
+    backgroundColor: 'red',
+    borderRadius: 100,
+    width: 20,
+    marginLeft: -10
   },
 });
 

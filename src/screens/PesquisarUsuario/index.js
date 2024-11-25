@@ -10,11 +10,15 @@ import {
   ScrollView,
   Pressable,
   TextInput,
+  Dimensions
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import api from "../../config/api.js";
 import BottomMenu from "../../components/BottomMenu";
+const { width, height } = Dimensions.get('window');
+
+
 const PesquisarUsuario = ({ navigation, route }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +26,7 @@ const PesquisarUsuario = ({ navigation, route }) => {
   const [search, setSearch] = useState("");
   const [searchResult, setSearchResult] = useState([]);
 
-  const searchUsers = async () => {
+  const searchUsers = async (search) => {
     setLoading(true);
     try {
       const response = await api.get(
@@ -40,9 +44,10 @@ const PesquisarUsuario = ({ navigation, route }) => {
   useFocusEffect(
     useCallback(() => {
       setSearch(searchValue);
-      searchUsers();
+      searchUsers(searchValue);
     }, [])
   );
+
   const UserCard = (user) => {
     let item = user.item.item;
     console.log(item);
@@ -64,7 +69,7 @@ const PesquisarUsuario = ({ navigation, route }) => {
           </View>
           <View style={styles.textContainer}>
             <Text style={styles.username}> {item.name} </Text>
-            <Text style={styles.action}> {item.username} </Text>
+            <Text style={styles.action}>@{item.username} </Text>
             <Text style={styles.postSnippet}> {item.bio} </Text>
           </View>
         </View>
@@ -85,7 +90,7 @@ const PesquisarUsuario = ({ navigation, route }) => {
       <View style={styles.header}>
         <Text style={{ textAlign: "center", fontSize: 35 }}>Pesquisa</Text>
       </View>
-      <View>
+      <View style={styles.inputPesquisa}>
         <TextInput
           style={styles.searchInput}
           placeholder="Pesquise algo..."
@@ -93,8 +98,8 @@ const PesquisarUsuario = ({ navigation, route }) => {
           value={search}
         />
 
-        <Pressable style={styles.pesquisar} onPress={searchUsers}>
-          <Text style={{ fontSize: 17, color: "white", fontWeight: "bold" }}>
+        <Pressable style={styles.pesquisar} onPress={() => searchUsers(search)}>
+          <Text style={{ fontSize: 17, color: "white", fontWeight: "bold", textAlign: 'center' }}>
             Pesquisar
           </Text>
         </Pressable>
@@ -159,7 +164,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     width: "100%",
-    height: 150,
+    height: height * 0.15,
     borderBottomColor: "#000",
   },
   image: {
@@ -253,14 +258,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   action: {
-    color: "#000",
+    color: "#6e6d6d",
   },
   postSnippet: {
-    color: "#6e6d6d",
+    color: '##787878',
   },
   searchInput: {
     flex: 1,
-    height: 40,
     borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 5,
@@ -271,6 +275,13 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     margin: 5,
     padding: 5,
+    width: width * 0.3,
+    textAlign: 'center'
+  },
+  inputPesquisa: {
+    display: 'flex',
+    flexDirection: 'row',
+    margin: 15,
   },
 });
 

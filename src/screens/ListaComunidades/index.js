@@ -7,36 +7,47 @@ import ComunidadeMenuDialog from '../../components/ComunidadeMenuDialog/index.js
 const { width, height } = Dimensions.get('window');
 
 export default function ({ navigation }) {
-    const [comunidades, setComunidades] = useState(null);
-    const [modalVisible, setModalVisible] = useState(false); // Controle de visibilidade do modal
-    const [denunciaText, setDenunciaText] = useState(''); // Texto da denúncia
-    const [selectedCommunityId, setSelectedCommunityId] = useState(null); // ID da comunidade selecionada para denúncia
+    const [comunidades, setComunidades] = useState(null)
+    const [search, setSearch] = useState('');
 
-    // Função para buscar as comunidades
     const getCommunities = useCallback(async () => {
         try {
             const response = await api.get('/community/all');
-            setComunidades(response.data.data); // Atualiza as comunidades no estado
+            setComunidades(response.data.data);
         } catch (error) {
             Alert.alert("Erro ao consultar feed", error.response?.data?.message || "Erro desconhecido");
         }
     }, []);
 
+    const searchCommunity = async () => {
+        if (!search) {
+            getCommunities();
+            return;
+        }
+        try {
+            const response = await api.get(`/community/search?search=${encodeURIComponent(search)}`);
+            const data = response.data.data;
+            setComunidades(data);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     const handleDeleteCommunity = (comunidadeId) => {
         setComunidades((prevComunidades) => prevComunidades.filter((comunidade) => comunidade.id !== comunidadeId));
     };
 
-    // Usando o useFocusEffect para atualizar as comunidades sempre que a tela for focada
+
     useFocusEffect(
         useCallback(() => {
-            getCommunities(); // Chama a função para carregar as comunidades
+            getCommunities();
         }, [getCommunities])
     );
 
 
     const renderItem = ({ item }) => (
         <View style={styles.communityCard}>
-            <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', width: '100%'}}>
+            <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', width: '100%' }}>
                 <ComunidadeMenuDialog community={item} onDeleteCommunity={handleDeleteCommunity} navigation={navigation} />
             </View>
             <Pressable onPress={() => navigation.navigate('TimelineComunidade', { id: item.id })}>
@@ -80,6 +91,20 @@ export default function ({ navigation }) {
                                 />
                             </Pressable>
                         </View>
+                    </View>
+                    <View style={styles.inputPesquisa}>
+                        <TextInput
+                            style={styles.searchInput}
+                            placeholder="Pesquisar comunidade..."
+                            onChangeText={setSearch}
+                            value={search}
+                        />
+
+                        <Pressable style={styles.pesquisar} onPress={searchCommunity}>
+                            <Text style={{ fontSize: 17, color: "white", fontWeight: "bold", textAlign: 'center' }}>
+                                Pesquisar
+                            </Text>
+                        </Pressable>
                     </View>
                     <FlatList
                         data={comunidades}
@@ -164,17 +189,16 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     communitiesRow: {
-        justifyContent: 'flex-start',
-        flexWrap: 'wrap',
         display: 'flex',
+        justifyContent: 'space-evenly',
+        flexWrap: 'wrap',
         flexDirection: 'row',
-        width: width - 15,
+        width: '100%',
         marginBottom: 100
     },
     communityCard: {
         alignItems: 'center',
-        width: 150,
-        margin: 15,
+        margin: 5,
         backgroundColor: '#f5f5f5',
         borderRadius: 10,
         padding: 10,
@@ -182,6 +206,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         flexDirection: 'column',
         flex: 1,
+        width: width * 0.35,
     },
     communityImage: {
         width: width * 0.25,
@@ -242,5 +267,25 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-around',
         backgroundColor: 'orange',
+    },
+    pesquisar: {
+        backgroundColor: "#f58523",
+        borderRadius: 5,
+        margin: 5,
+        padding: 5,
+        width: width * 0.25,
+        textAlign: 'center'
+    },
+    inputPesquisa: {
+        display: 'flex',
+        flexDirection: 'row',
+        margin: 15,
+    },
+    searchInput: {
+        flex: 1,
+        borderColor: "#ccc",
+        borderWidth: 1,
+        borderRadius: 5,
+        paddingHorizontal: 10,
     },
 });
