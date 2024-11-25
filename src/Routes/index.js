@@ -18,12 +18,12 @@ import Notificacoes from '../screens/Notificacoes/index.js';
 import RespostaDenuncia from '../screens/RespostaDenuncia/index.js';
 import PostDetailScreen from '../screens/PostDetailScreen/index.js';
 import EditarPost from '../screens/EditarPost/index.js';
+import PesquisarUsuario from '../screens/PesquisarUsuario/index.js';
 export default function App() {
     const stack = createStackNavigator();
     return (
         <NavigationContainer>
             <stack.Navigator>
-
                 <stack.Screen
                     name="Login"
                     component={Login}
@@ -100,6 +100,14 @@ export default function App() {
                 <stack.Screen
                     name="Notificacoes"
                     component={Notificacoes}
+                    options={{
+                        title: '',
+                        headerShown: false
+                    }}
+                ></stack.Screen>
+                <stack.Screen
+                    name="PesquisarUsuario"
+                    component={PesquisarUsuario}
                     options={{
                         title: '',
                         headerShown: false

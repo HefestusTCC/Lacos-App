@@ -169,6 +169,7 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'row',
         width: width - 15,
+        marginBottom: 100
     },
     communityCard: {
         alignItems: 'center',
