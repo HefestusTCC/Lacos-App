@@ -1,22 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Image, TouchableOpacity, Alert, StyleSheet, Dimensions, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import api from '../../config/api.js';
+import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 const { width, height } = Dimensions.get('window');
-const EditarPost = ({ navigation, route }) => {
+
+const EditarPost = ({navigation, route}) => {
     const [text, setText] = useState(null);
     const [image, setImage] = useState(null);
-    var idComunidade = null;
+    const [idComunidade, setIdComunidade] = useState(null);
     const post = route?.params?.post;
     const postId = post.id;
-    if (post) {
-        setText(post.content);
-        setImage(post.image);
-    }
-    if (post.community != null){
-        idComunidade = post.community.id;
-    }
+
+    useEffect(() => {
+        if (post) {
+            setText(post.content);
+            setImage(post.image);
+            if (post.community) {
+                setIdComunidade(post.community.id);
+            }
+        }
+    }, [post]);
 
     async function pickImage() {
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -61,7 +66,7 @@ const EditarPost = ({ navigation, route }) => {
         }
     }
 
-    const createPost = async () => {
+    const editPost = async () => {
         if (!text) {
             Alert.alert("Você não pode editar um post para que ele fique sem conteúdo!");
             return;
@@ -91,7 +96,7 @@ const EditarPost = ({ navigation, route }) => {
             return;
         }
         try {
-            const response = await api.post(`/post/${postId}`, postData);
+            const response = await api.put(`/post/${postId}`, postData);
             if (response.status == 200) {
                 Alert.alert("Post editado com sucesso");
                 navigation.goBack();
@@ -142,12 +147,12 @@ const EditarPost = ({ navigation, route }) => {
             />
 
             {image ? (
-                <Pressable onPress={pickImage} style={styles.imageButton}>
+                <Pressable onPress={pickImage} style={styles.anotherImageButton}>
                     <Image source={{ uri: image }} style={styles.imageBackground} />
                 </Pressable>
             ) : (
                 <Pressable onPress={pickImage} style={styles.imageButton}>
-                    <Icon name="image" size={40} color="black" /> // Ícone de imagem
+                    <Icon name="image" size={40} color="black" /> 
                 </Pressable>
             )}
 
@@ -159,7 +164,7 @@ const EditarPost = ({ navigation, route }) => {
                 marginTop: 20,
                 alignSelf: 'center',
             }}
-                onPress={() => createPost()}
+                onPress={() => editPost()}
             >
                 <Text style={{ fontSize: 18, color: '#fff', textAlign: 'center', }}>Editar Post</Text>
             </TouchableOpacity>
@@ -176,7 +181,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     imageBackground: {
-        width: '90%',
+        width: width * 0.9,
         height: 250,
         backgroundColor: '#d3d3d3',
         borderRadius: 8,
@@ -250,6 +255,9 @@ const styles = StyleSheet.create({
     },
     imageButton: {
         marginRight: width * 0.55,
+    },
+    anotherImageButton: {
+        
     }
 
 

@@ -1,16 +1,29 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Image, StyleSheet, Pressable, Alert, ScrollView, Button } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Alert,
+  Dimensions,
+  ScrollView
+} from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { useNavigation } from '@react-navigation/native';
 import api from '../../config/api.js';
+const { width, height } = Dimensions.get('window');
 
-const Editar_Comunidade = ({ navigation, route }) => {
-  const comunidade = route.params.comunidade;
-  const id = comunidade.id;
-  const [name, setName] = useState(comunidade.name);
-  const [fotoUrl, setFotoUrl] = useState(comunidade.communityPictureUrl);
-  const [fundoUrl, setFundoUrl] = useState(comunidade.bannerUrl);
-  const [description, setDescription] = useState(comunidade.description);
-  const updateCommunity = async () => {
-    if (!name || !description){
+const Editar_Comunidade = ({route, navigation}) => {
+  const [name, setName] = useState('');
+  const [fotoUrl, setFotoUrl] = useState('');
+  const [fundoUrl, setFundoUrl] = useState('');
+  const [description, setDescription] = useState('');
+  const [imageUri, setImageUri] = useState(null);
+  const community = route?.params?.community;
+  const editCommunity = async () => {
+    if (!name || !description) {
       Alert.alert("O nome e a descrição da comunidade não podem ficar vazios!");
       return;
     }
@@ -21,166 +34,261 @@ const Editar_Comunidade = ({ navigation, route }) => {
       description: description,
       categories: ['Tecnologia']
     }
-    try{
-      let response = await api.put(`/community/${id}`, communityData);
-      if (response.status == 200){
-        Alert.alert("Comunidade atualizada com sucesso");
+    try {
+      let response = await api.put(`/community/${community.id}`, communityData);
+      if (response.status == 200) {
         navigation.goBack();
       }
 
-    } catch (error){
+    } catch (error) {
       console.log(error)
-      Alert.alert("Erro ao atualizar a comunidade");
+      Alert.alert("Erro ao editar a comunidade", error.response.data.message)
     }
   }
-  return (
-    <ScrollView style={styles.container}>
-      <Pressable onPress={() => navigation.goBack()}>{}
-        <Image
-          source={require("../../../assets/voltar.png")}
-          style={styles.voltar}
-        />
-      </Pressable>
+  async function pickImage() {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      alert("Permissão para acessar a galeria é necessária!");
+      return;
+    }
 
-      <Text style={styles.header}>Editar Comunidade</Text>
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 0.8,
+    });
 
-      <View style={styles.card}>
-        <Text style={styles.label}>Nome da comunidade:</Text>
-        <TextInput
-          style={styles.input}
-          value={name}
-          onChangeText={setName}
-
-        />
-
-        <Text style={styles.label}>Url da foto da comunidade:</Text>
-        <TextInput
-          style={styles.input}
-          value={fotoUrl}
-          onChangeText={setFotoUrl}
-        />
-
-        <Text style={styles.label}>Url da foto de fundo:</Text>
-        <TextInput
-          style={styles.input}
-          value={fundoUrl}
-          onChangeText={setFundoUrl}
-        />
-
-        <Text style={styles.label}>Descrição: </Text>
-        <TextInput
-          style={styles.input_descricao}
-          value={description}
-          multiline={true}
-          onChangeText={setDescription}
-          
-        />
-        
-        <View style={styles.buttonContainer}>
-          <Pressable style={styles.saveButton} onPress={() => updateCommunity()}>
-            <Text style={styles.saveButtonText}>Salvar</Text>
-          </Pressable>
-          <Pressable style={styles.cancelButton} onPress={() => navigation.goBack()}>
-            <Text style={styles.cancelButtonText}>Cancelar</Text>
-          </Pressable>
-        </View>
-      </View>
-    </ScrollView>
-  );
+    if (!result.canceled) {
+      setImageUri(result.assets[0].uri);
+      let imageUrl = await uploadImageToCloudinary(result.assets[0].uri);
+      setFotoUrl(imageUrl)
+      console.log(fotoUrl)
+    }
   }
+  async function pickBackgroundImage() {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      alert("Permissão para acessar a galeria é necessária!");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setImageUri(result.assets[0].uri);
+      let imageUrl = await uploadImageToCloudinary(result.assets[0].uri);
+      setFundoUrl(imageUrl);
+    }
+  }
+
+  async function uploadImageToCloudinary(imageUri) {
+    const cloudName = "dl85nlwfe";
+    const uploadPreset = "lacosapp";
+
+    const formData = new FormData();
+    formData.append("file", {
+      uri: imageUri,
+      type: "image/jpeg",
+      name: "profile_image.jpg",
+    });
+    formData.append("upload_preset", uploadPreset);
+
+    try {
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      return data.secure_url; // Retorna a URL da imagem carregada
+    } catch (error) {
+      console.log(error)
+      console.error("Erro ao fazer upload da imagem:", error.response);
+      return null;
+    }
+  }
+  useEffect(() => {
+    setName(community.name);
+    setDescription(community.description);
+    setFotoUrl(community.communityImageUrl);
+    setFundoUrl(community.bannerUrl);
+  }, []);
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Editar Comunidade</Text>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scrollView}>
+        <TouchableOpacity onPress={pickBackgroundImage} style={styles.imageBackground}>
+          {fundoUrl ? (
+            <Image source={{ uri: fundoUrl }} style={styles.image} />
+          ) : (
+            <Text style={styles.imagePlaceholder}>Carregar Imagem</Text>
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity onPress={pickImage} style={styles.communityImage}>
+          {fotoUrl ? (
+            <Image source={{ uri: fotoUrl }} style={styles.communityImage} />
+          ) : (
+            <Text style={styles.imagePlaceholder}>Carregar Imagem</Text>
+          )}
+        </TouchableOpacity>
+
+        <View style={styles.mainContent}>
+          <Text style={styles.label}>Nome:</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Digite o nome da comunidade"
+            value={name}
+            onChangeText={setName}
+          />
+
+          <Text style={styles.label}>Descrição:</Text>
+          <TextInput
+            style={[styles.input, styles.descricaoInput]}
+            placeholder="Digite a descrição da comunidade"
+            value={description}
+            onChangeText={setDescription}
+            multiline
+          />
+
+          <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around' }}>
+            <TouchableOpacity style={styles.submitButton} onPress={editCommunity}>
+              <Text style={styles.submitButtonText}>Editar Comunidade</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.goBack()}>
+              <Text style={styles.submitButtonText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#fff',
+    padding: 20,
   },
-  voltar: {
-    marginTop: 50,
-    marginLeft: 10,
-    width: 22,
-    height: 22,
+  mainContent: {
+    marginTop: height * 0.1
   },
   header: {
-    fontSize: 24,
-    textAlign: 'center',
-    marginTop: 20,
-    color: "#FF6E15",
-  },
-  profileContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    marginBottom: 20,
   },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderColor: '#FF6E15',
-    borderWidth: 2,
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 50,
+    textAlign: 'center'
   },
-  changePhotoText: {
-    color: '#FF6E15',
-    marginTop: 10,
+  backButton: {
+    fontSize: 24,
   },
-  card: {
-    padding: 20,
-    marginTop: 20,
+  settingsButton: {
+    fontSize: 24,
+  },
+  scrollView: {
+    flexGrow: 1,
+  },
+  imageBackground: {
+    width: width - 40,
+    height: 150,
+    backgroundColor: '#d3d3d3',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  communityImage: {
+    width: width * 0.3,
+    height: width * 0.3,
+    backgroundColor: '#d3d3d3',
+    borderRadius: 90,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    marginTop: 90,
+    marginLeft: 20,
+    position: 'absolute',
+    borderWidth: 1,
+    borderColor: 'white'
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+  },
+  imagePlaceholder: {
+    color: '#888',
+    fontSize: 16,
   },
   label: {
-    fontSize: 18,
-    marginBottom: 10,
-    color: "#FF6E15",
-  },
-  input_descricao: {
-    fontSize: 18,
-    marginBottom: 2,
-    color: "#000",
-    height: 100,
-    borderWidth: 1,  
-    padding: 10,  
-    textAlignVertical: "top", 
-    borderRadius: 8,
-    borderColor:"#FF6E15"
+    fontSize: 16,
+    marginBottom: 5,
   },
   input: {
-    borderColor: "#FF6E15",
+    height: 40,
+    borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 8,
-    marginBottom: 12,
-    padding: 10,
-    fontSize: 16,
-    color: "#000",
+    paddingHorizontal: 10,
+    marginBottom: 15,
   },
-  inputPicker: {
-    borderColor: "#FF6E15",
-    borderWidth: 1,
+  descricaoInput: {
+    height: 80,
+    textAlignVertical: 'top',
+  },
+  submitButton: {
+    width: '40%',
+    backgroundColor: '#f58523',
+    paddingVertical: 12,
     borderRadius: 8,
-    marginBottom: 12,
-    fontSize: 16,
-    color: "#000",
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 20,
-  },
-  saveButton: {
-    backgroundColor: "#FF6E15",
-    padding: 10,
-    borderRadius: 8,
-  },
-  saveButtonText: {
-    color: "#FFF",
-    fontSize: 18,
+    alignItems: 'center',
   },
   cancelButton: {
-    backgroundColor: "#FF0000",
-    padding: 10,
+    width: '40%',
+    backgroundColor: 'red',
+    paddingVertical: 12,
     borderRadius: 8,
+    alignItems: 'center',
   },
-  cancelButtonText: {
-    color: "#FFF",
-    fontSize: 18,
+  submitButtonText: {
+    color: '#fff',
+    fontSize: 16,
   },
+  navBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    bottom: 0,
+    backgroundColor: '#f0f0f0',
+    padding: 10,
+  },
+  navItem: {
+    fontSize: 14,
+  },
+  backButton: {
+    padding: 10,
+    backgroundColor: '#F4A460',
+    alignItems: 'center',
+    marginBottom: 20,
+    borderRadius: 5,
+  },
+  backButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+
 });
 
 export default Editar_Comunidade;

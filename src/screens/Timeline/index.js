@@ -21,25 +21,12 @@ export default function Timeline({ navigation }) {
         school: storedUser.school,
         course: storedUser.course
     });
-    const [reportModal, setReportModal] = useState(null);
-    const [menuVisible, setMenuVisible] = useState(false);
-    const [visibleCommentsForPost, setVisibleCommentsForPost] = useState(null);
+
     const [posts, setPosts] = useState([]);
+    const [search, setSearch] = useState('');
 
-
-    const openReportModal = (postId) => {
-        setReportModal(postId);
-    }
-
-    const closeReportModal = () => {
-        setReportModal(null);
-    };
-
-    const openCommentsModal = (postId) => {
-        setVisibleCommentsForPost(postId);
-    };
-    const closeCommentsModal = () => {
-        setVisibleCommentsForPost(null);
+    const handleDeletePost = (postId) => {
+        setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
     };
     const getFeed = async () => {
         try {
@@ -51,249 +38,11 @@ export default function Timeline({ navigation }) {
         }
     }
 
-
-    const report = async (id) => {
-        if (!reportValue) {
-            Alert.alert("Não é possível criar uma denúncia vazia");
-            return;
-        }
-        const reportData = {
-            "message": reportValue
-        }
-        try {
-            const response = await api.post(`/tickets/post/${id}`, reportData);
-            if (response.status == 201) {
-                Alert.alert("Denúncia criada com sucesso");
-                return true;
-            }
-        } catch (error) {
-            Alert.alert("Erro ao criar denúncia", error.response.data.message);
-            return false;
-        }
-        setReportValue('');
-    }
-
-    // Função para enviar denúncia
-    const handleReport = async (id) => {
-        let reported = await report(id);
-        // setReportValue('');
-        setReportModal(null);
-    };
-
-    // Função para adicionar comentário
-    const handleAddComment = async (id) => {
-        if (!newComment) {
-            Alert.alert("Não é possível criar um comentário vazio.");
-            return;
-        }
-        let updatedComments = await createComment(id);
-        if (updatedComments) {
-            setPosts(prevPosts =>
-                prevPosts.map(post =>
-                    post.id === id
-                        ? {
-                            ...post,
-                            comments: updatedComments // Atualiza com os comentários retornados
-                        }
-                        : post
-                )
-            );
-        }
-        setNewComment('');
-    };
-
-
-    const didUserLikePost = (post) => {
-        return post.likes.some(like => like.user.id === userData.id);
-    };
-
-    const like = async (id, alreadyLiked) => {
-        try {
-            const response = await api.post(`/post/${id}/like`);
-            if (response.status == 200) {
-                // console.log("likes: " + JSON.stringify(response.data.data.likes));
-                return !alreadyLiked;
-            }
-        } catch (error) {
-
-            Alert.alert("Erro ao dar like ou unlike:", error.response.data.message)
-        }
-    }
-    const createComment = async (id) => {
-
-        const commentData = {
-            "content": newComment
-        }
-        try {
-            const response = await api.post(`/post/${id}/comment`, commentData);
-            if (response.status == 201) {
-                Alert.alert("Comentário criado com sucesso");
-                return response.data.data.comments;
-            }
-        } catch (error) {
-            Alert.alert("Erro ao criar comentário", error.response.data.message)
-        }
-    }
-
-    // Componente LikeButton
-    const LikeButton = ({ post }) => {
-        const [liked, setLiked] = useState(didUserLikePost(post));
-        const [likeCount, setLikeCount] = useState(post.likeCount);
-        const toggleLike = async (id, alreadyLiked) => {
-            let newLikedState = await like(id, alreadyLiked);
-            if (newLikedState) {
-                setLikeCount(likeCount + 1);
-            } else {
-                setLikeCount(likeCount - 1);
-            }
-            setLiked(newLikedState);
-        };
-
-        return (
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <TouchableOpacity onPress={() => toggleLike(post.id, liked)}>
-                    <AntDesign
-                        name={liked ? 'heart' : 'hearto'}
-                        size={32}
-                        color='orange'
-                        margin={20}
-                    />
-                </TouchableOpacity>
-                <Text>{likeCount}</Text>
-            </View>
-        );
-    };
-
-    // Componente CommentButton
-    const CommentButton = ({ id }) => {
-        return (
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <TouchableOpacity onPress={() => openCommentsModal(id)}>
-                    <AntDesign name="message1" size={32} color='orange' />
-                </TouchableOpacity>
-            </View>
-        );
-    };
-
-    // Componente para exibir cada comentário
-    const Comment = ({ comment }) => {
-        if (!comment) return null;
-        comment = comment.item;
-        return (
-            <>
-                <View style={styles.commentContainer}>
-                    <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', { userId: comment.author.id })}>
-                        <Image source={{ uri: comment.author.profilePictureURL }} style={styles.commentUserImage} />
-                    </Pressable>
-                    <View>
-                        <Text style={styles.userName}>{comment.author.name}</Text>
-                        <Text style={styles.userHandle}>@{comment.author.username}</Text>
-                        <Text style={styles.commentText}>{comment.content}</Text>
-                    </View>
-                </View>
-            </>
-        );
-    };
-
-    const renderPosts = ({ item }) => {
-        if (!item || !item.author) {
-
-            return null;
-        }
-        let post = item;
-
-
-        return (
-            <>
-                {/* Seção de Publicação */}
-                <View style={styles.newPublication}>
-                    <View style={styles.header}>
-                        <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', { userId: post.author.id })}>
-                            <Image
-                                source={{ uri: post.author.profilePictureURL }}
-                                style={styles.userImage}
-                            />
-                        </Pressable>
-                        <View>
-                            <Text style={styles.userName}>{post.author.name}</Text>
-                            <Text style={styles.userHandle}>@{post.author.username}</Text>
-                        </View>
-                        <Pressable onPress={() => openReportModal(post.id)} style={styles.optionsButton}>
-                            <Text style={styles.moreOptions}>...</Text>
-                        </Pressable>
-                    </View>
-                    <Text style={styles.publicationText}>{post.content}</Text>
-                    {post.image != null ? <Image
-                        source={{ uri: post.image }}
-                        style={styles.publicationImage}
-                    // Abre o modal de comentários ao pressionar a imagem
-                    /> : null}
-
-                    {/* LIKE BUTTON */}
-                    <View style={styles.likeButtonContainer}>
-                        <LikeButton post={post} />
-                        <CommentButton id={post.id} />
-                    </View>
-
-                    {/* Modal para Comentários */}
-                    <Modal animationType="fade" transparent={true} visible={visibleCommentsForPost === post.id} >
-                        <View style={styles.modalBackground}>
-                            <View style={styles.modalContainer}>
-                                <Text style={styles.modalTitle}>Comentários</Text>
-                                <View style={styles.header}>
-                                    <Image
-                                        source={{ uri: post.author.profilePictureURL }}
-                                        style={styles.userImage}
-                                    />
-                                    <View>
-                                        <Text style={styles.userName}>{post.author.name}</Text>
-                                        <Text style={styles.userHandle}>@{post.author.username}</Text>
-                                    </View>
-                                </View>
-                                <Text style={styles.publicationText}>{post.content}</Text>
-                                {post.image ? <Image source={{ uri: post.image }} style={styles.publicationImage} /> : null}
-                                <FlatList
-                                    data={item.comments}
-                                    renderItem={(item) => item ? <Comment comment={item} /> : null} // Renderiza cada comentário
-                                    keyExtractor={(item) => item.id.toString()}
-                                    style={styles.comments}
-                                />
-                                <TextInput
-                                    style={styles.commentInput}
-                                    placeholder="Adicione um comentário..."
-                                    value={newComment}
-                                    onChangeText={setNewComment}
-                                />
-                                <TouchableOpacity onPress={() => handleAddComment(post.id)} style={styles.addCommentButton}>
-                                    <Text style={styles.addCommentButtonText}>Enviar</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity onPress={() => closeCommentsModal()} style={styles.closeButton}>
-                                    <Text style={styles.closeButtonText}>Fechar</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </Modal>
-
-                    {/* Modal para Denúncia */}
-                    <Modal
-                        animationType="slide"
-                        transparent={true}
-                        visible={reportModal == post.id}
-                        onRequestClose={() => closeReportModal()}
-                    >
-                        <View style={styles.modalBackground}>
-                            <View style={styles.modalContainer}>
-                                <Text style={styles.modalTitle}>Denunciar Postagem</Text>
-                                <TextInput value={reportValue} onChangeText={setReportValue} style={styles.reportInput} placeholder="Motivo da denúncia" />
-                                <TouchableOpacity onPress={() => handleReport(post.id)} style={styles.reportButton}>
-                                    <Text style={styles.reportButtonText}>Enviar Denúncia</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </Modal>
-                </View>
-            </>
-        );
+    const pesquisar = () => {
+       if(!search){
+        return;
+       }
+       navigation.navigate('PesquisarUsuario', {search: search});
     }
 
     useFocusEffect(
@@ -313,13 +62,15 @@ export default function Timeline({ navigation }) {
     return (
         <View style={styles.container}>
             <View style={styles.searchBarContainer}>
-                <TouchableOpacity style={styles.menuButton} onPress={() => setMenuVisible(!menuVisible)}>
-                    <Image source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Hamburger_icon.svg/800px-Hamburger_icon.svg.png' }} style={styles.menuIcon} />
-                </TouchableOpacity>
-
-                <TextInput style={styles.searchInput} placeholder="Pesquise algo..." />
-
                 <Image source={require("../../../assets/logo.png")} style={styles.logo} />
+                <TextInput style={styles.searchInput} placeholder="Pesquise algo..." 
+                    onChangeText={setSearch}
+                    value={search}
+                />
+
+                <Pressable style={styles.pesquisar} onPress={pesquisar}>
+                    <Text style={{fontSize: 17, color: 'white', fontWeight: 'bold'}}>Pesquisar</Text>
+                </Pressable>
             </View>
             <View style={styles.profileSection}>
                 <Pressable onPress={() => navigation.navigate('Perfil')}>
@@ -338,17 +89,11 @@ export default function Timeline({ navigation }) {
             </View>
             <FlatList
                 data={posts}
-                renderItem={(item) => <PostCard post={item.item} navigation={navigation}></PostCard>}
+                renderItem={(item) => <PostCard post={item.item} navigation={navigation} handleDeletePost={handleDeletePost}></PostCard>}
                 keyExtractor={item => item.id.toString()}
                 style={styles.posts}
             />
-            {/* Menu Vertical */}
-            {menuVisible && (
-                <View style={styles.menu}>
-                    <Text style={styles.menuItem}>Configurações</Text>
-                    <Text style={styles.menuItem}>Sair</Text>
-                </View>
-            )}
+
             <BottomMenu></BottomMenu>
         </View>
 
@@ -358,7 +103,6 @@ export default function Timeline({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: width * 0.02,
         backgroundColor: '#fff',
     },
     searchBarContainer: {
@@ -366,6 +110,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 10,
         backgroundColor: '#f8f8f8',
+        marginTop: 25,
     },
     menuButton: {
         marginRight: 10,
@@ -402,6 +147,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: height * 0.02,
+        padding: 5,
     },
     profileImage: {
         width: width * 0.15,
@@ -566,27 +312,19 @@ const styles = StyleSheet.create({
     commentText: {
         color: '#555',
     },
-    reportInput: {
-        borderColor: '#ccc',
-        borderWidth: 1,
-        borderRadius: 8,
-        padding: height * 0.015,
-        marginBottom: height * 0.02,
-    },
-    reportButton: {
-        backgroundColor: '#f58523',
-        padding: height * 0.02,
-        borderRadius: 10,
-        alignItems: 'center',
-    },
-    reportButtonText: {
-        color: '#fff',
-        fontWeight: 'bold',
-    },
+
     posts: {
         flex: 1,
+        marginBottom: 40,
+        padding: 10,
     },
     comments: {
         maxHeight: 200
+    },
+    pesquisar:{
+        backgroundColor: '#f58523',
+        borderRadius: 5,
+        margin: 5,
+        padding: 5,
     },
 });

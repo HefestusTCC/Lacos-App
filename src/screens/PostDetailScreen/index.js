@@ -19,8 +19,8 @@ import CommentButtonDetails from '../../components/CommentButtonDetails';
 import PostMenuDialog from '../../components/PostMenuDialog';
 import Comment from '../../components/Comment';
 import api from '../../config/api';
+import BottomMenu from '../../components/BottomMenu';
 const { width, height } = Dimensions.get('window');
-
 
 const PostDetailScreen = ({ navigation, route }) => {
     const [post, setPost] = useState();
@@ -55,6 +55,8 @@ const PostDetailScreen = ({ navigation, route }) => {
         setNewComment('');
     };
 
+
+
     useFocusEffect(
         useCallback(() => {
             const getPost = async (id) => {
@@ -72,81 +74,84 @@ const PostDetailScreen = ({ navigation, route }) => {
 
     return (
         <>
-            {loading ? (<ActivityIndicator size="large" color="#FF6E15" />) :
-                <View style={styles.container}>
-                    <View style={styles.newPublication}>
-                        {post.community != null ?
-                            <View style={styles.header}>
-                                <Pressable onPress={() => navigation.navigate('TimelineComunidade', { id: post.community.id })}>
-                                    <Image
-                                        source={{ uri: post.community.communityImageUrl }}
-                                        style={styles.communityImage}
-                                    />
-                                </Pressable>
-                                <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', { userId: post.author.id })}>
-                                    <Image
-                                        source={{ uri: post.author.profilePictureURL }}
-                                        style={[styles.userImage, { marginLeft: -width * 0.09, height: 30, width: 30, marginBottom: -height * 0.02 }]}
-                                    />
-                                </Pressable>
-                                <View>
-                                    <Text style={styles.communityName}>{post.community.name}</Text>
-                                    <Text style={styles.userNameCommunity}>{post.author.name}</Text>
-                                    <Text style={styles.userHandle}>@{post.author.username}</Text>
+            <View style={{ flex: 1, backgroundColor: 'white' }}>
+                {loading ? (<ActivityIndicator size="large" color="#FF6E15" />) :
+                    <View style={styles.container}>
+                        <View style={styles.newPublication}>
+                            {post.community != null ?
+                                <View style={styles.header}>
+                                    <Pressable onPress={() => navigation.navigate('TimelineComunidade', { id: post.community.id })}>
+                                        <Image
+                                            source={{ uri: post.community.communityImageUrl }}
+                                            style={styles.communityImage}
+                                        />
+                                    </Pressable>
+                                    <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', { userId: post.author.id })}>
+                                        <Image
+                                            source={{ uri: post.author.profilePictureURL }}
+                                            style={[styles.userImage, { marginLeft: -width * 0.09, height: 30, width: 30, marginBottom: -height * 0.02 }]}
+                                        />
+                                    </Pressable>
+                                    <View>
+                                        <Text style={styles.communityName}>{post.community.name}</Text>
+                                        <Text style={styles.userNameCommunity}>{post.author.name}</Text>
+                                        <Text style={styles.userHandle}>@{post.author.username}</Text>
+                                    </View>
+                                    <PostMenuDialog post={post} navigation={navigation}></PostMenuDialog>
+                                </View> :
+                                <View style={styles.header}>
+                                    <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', { userId: post.author.id })}>
+                                        <Image
+                                            source={{ uri: post.author.profilePictureURL }}
+                                            style={styles.userImage}
+                                        />
+                                    </Pressable>
+                                    <View>
+                                        <Text style={styles.userName}>{post.author.name}</Text>
+                                        <Text style={styles.userHandle}>@{post.author.username}</Text>
+                                    </View>
+                                    <PostMenuDialog post={post} navigation={navigation}></PostMenuDialog>
                                 </View>
-                                <PostMenuDialog post={post}></PostMenuDialog>
-                            </View> :
-                            <View style={styles.header}>
-                                <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', { userId: post.author.id })}>
-                                    <Image
-                                        source={{ uri: post.author.profilePictureURL }}
-                                        style={styles.userImage}
-                                    />
-                                </Pressable>
-                                <View>
-                                    <Text style={styles.userName}>{post.author.name}</Text>
-                                    <Text style={styles.userHandle}>@{post.author.username}</Text>
-                                </View>
-                                <PostMenuDialog post={post}></PostMenuDialog>
+                            }
+                            <Text style={styles.publicationText}>{post.content}</Text>
+                            {post.image != null ? <Image
+                                source={{ uri: post.image }}
+                                style={styles.publicationImage}
+                            /> : null}
+                        </View>
+
+
+                        <View style={styles.actions}>
+                            <View style={styles.likeButtonContainer}>
+                                <LikeButton post={post}></LikeButton>
                             </View>
-                        }
-                        <Text style={styles.publicationText}>{post.content}</Text>
-                        {post.image != null ? <Image
-                            source={{ uri: post.image }}
-                            style={styles.publicationImage}
-                        /> : null}
-                    </View>
-
-
-                    <View style={styles.actions}>
-                        <View style={styles.likeButtonContainer}>
-                            <LikeButton post={post}></LikeButton>
+                            <View style={styles.likeButtonContainer}>
+                                <CommentButtonDetails post={post}></CommentButtonDetails>
+                            </View>
                         </View>
-                        <View style={styles.likeButtonContainer}>
-                            <CommentButtonDetails post={post}></CommentButtonDetails>
-                        </View>
-                    </View>
 
-                    <View style={styles.commentInputContainer}>
-                        <TextInput
-                            style={styles.commentInput}
-                            placeholder="Adicione um comentário..."
-                            value={newComment}
-                            onChangeText={setNewComment}
-                        />
-                        <TouchableOpacity style={styles.addCommentButton} onPress={handleAddComment}>
-                            <Text style={styles.addCommentText}>Comentar</Text>
-                        </TouchableOpacity>
+                        <View style={styles.commentInputContainer}>
+                            <TextInput
+                                style={styles.commentInput}
+                                placeholder="Adicione um comentário..."
+                                value={newComment}
+                                onChangeText={setNewComment}
+                            />
+                            <TouchableOpacity style={styles.addCommentButton} onPress={handleAddComment}>
+                                <Text style={styles.addCommentText}>Comentar</Text>
+                            </TouchableOpacity>
+                        </View>
+                        {post.comments.length > 0 ?
+                            <FlatList
+                                data={post.comments}
+                                renderItem={(item) => item ? <Comment comment={item} /> : null} // Renderiza cada comentário
+                                keyExtractor={(item) => item.id.toString()}
+                                style={styles.comments}
+                            /> : <Text style={{ textAlign: 'center', margin: 5, color: 'gray' }}>Esse post não possui comentários. Comente agora!</Text>}
                     </View>
-                    {post.comments.length > 0 ?
-                        <FlatList
-                            data={post.comments}
-                            renderItem={(item) => item ? <Comment comment={item} /> : null} // Renderiza cada comentário
-                            keyExtractor={(item) => item.id.toString()}
-                            style={styles.comments}
-                        /> : <Text style={{ textAlign: 'center', margin: 5, color: 'gray' }}>Esse post não possui comentários. Comente agora!</Text>}
-                </View>
-            }
+                }
+                <BottomMenu></BottomMenu>
+            </View>
         </>
     );
 };
@@ -156,6 +161,7 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 15,
         backgroundColor: '#fff',
+        marginTop: 30
     },
     header: {
         flexDirection: 'row',
@@ -187,7 +193,6 @@ const styles = StyleSheet.create({
     },
     postImage: {
         width: '100%',
-        height: 200,
         borderRadius: 10,
         marginVertical: 10,
     },
@@ -263,6 +268,7 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
+        maxWidth: '99%' 
     },
     userImage: {
         width: 40,
@@ -287,7 +293,7 @@ const styles = StyleSheet.create({
     },
     publicationImage: {
         width: '100%',
-        height: 200,
+        height: '250',
         borderRadius: 10,
     },
     likeButtonContainer: {
@@ -373,7 +379,8 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     comments: {
-        flex: 1
+        flex: 1,
+        marginBottom: 50,
     },
     communityImage: {
         width: 40,

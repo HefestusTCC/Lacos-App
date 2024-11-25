@@ -4,7 +4,10 @@ import { View, Text, Image, TextInput, StyleSheet, TouchableOpacity, ScrollView,
 import * as SecureStore from 'expo-secure-store';
 import { AntDesign } from '@expo/vector-icons';
 import BottomMenuComunidade from '../../components/ComunidadeMenu';
+import PostCard from '../../components/PostCard';
 import api from '../../config/api';
+import BotaoEditarComunidade from '../../components/BotaoEditarComunidade';
+
 const { width, height } = Dimensions.get('window');
 
 
@@ -22,27 +25,11 @@ const TimelineComunidade = ({ navigation, route }) => {
     school: storedUser.school,
     course: storedUser.course
   });
-
-  const [reportModal, setReportModal] = useState(null);
   const [comunidade, setComunidade] = useState(false);
-  const [visibleCommentsForPost, setVisibleCommentsForPost] = useState(null);
   const [posts, setPosts] = useState([]);
-  const [newComment, setNewComment] = useState('');
-  const [reportValue, setReportValue] = useState('');
-
-  const openReportModal = (postId) => {
-    setReportModal(postId);
-  }
-
-  const closeReportModal = () => {
-    setReportModal(null);
-  };
-
-  const openCommentsModal = (postId) => {
-    setVisibleCommentsForPost(postId);
-  };
-  const closeCommentsModal = () => {
-    setVisibleCommentsForPost(null);
+  const [inCommunity, setInCommunity] = useState();
+  const handleDeletePost = (postId) => {
+    setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
   };
   const getFeed = async () => {
     try {
@@ -69,273 +56,39 @@ const TimelineComunidade = ({ navigation, route }) => {
   const joinCommunity = async () => {
     try {
       const response = await api.post(`/community/${idComunidade}/enter`);
-      return await response.data.data;
+      const data = response.data.data;
+      setComunidade(data);
+      setInCommunity(isUserInCommunity(data, storedUser.id));
+      console.log(inCommunity);
     } catch (error) {
       Alert.alert("Erro ao consultar comunidade", error.response.data.message)
     }
   }
 
-
-  const report = async (id) => {
-    if (!reportValue) {
-      Alert.alert("Não é possível criar uma denúncia vazia");
-      return;
-    }
-    const reportData = {
-      "message": reportValue
-    }
+  const leaveCommunity = async () => {
     try {
-      const response = await api.post(`/tickets/post/${id}`, reportData);
-      if (response.status == 201) {
-        Alert.alert("Denúncia criada com sucesso");
-        return true;
-      }
+      const response = await api.post(`/community/${idComunidade}/leave`);
+      const data = response.data.data;
+      setComunidade(data);
+      setInCommunity(isUserInCommunity(data, storedUser.id));
+      console.log(inCommunity)
     } catch (error) {
-      Alert.alert("Erro ao criar denúncia", error.response.data.message);
-      return false;
-    }
-    setReportValue('');
-  }
-
-  // Função para enviar denúncia
-  const handleReport = async (id) => {
-    let reported = await report(id);
-    // setReportValue('');
-    setReportModal(null);
-  };
-
-  // Função para adicionar comentário
-  const handleAddComment = async (id) => {
-    if (!newComment) {
-      Alert.alert("Não é possível criar um comentário vazio.");
-      return;
-    }
-    let updatedComments = await createComment(id);
-    if (updatedComments) {
-      setPosts(prevPosts =>
-        prevPosts.map(post =>
-          post.id === id
-            ? {
-              ...post,
-              comments: updatedComments // Atualiza com os comentários retornados
-            }
-            : post
-        )
-      );
-    }
-    setNewComment('');
-  };
-
-
-  const didUserLikePost = (post) => {
-    return post.likes.some(like => like.user.id === userData.id);
-  };
-
-  const like = async (id, alreadyLiked) => {
-    try {
-      const response = await api.post(`/post/${id}/like`);
-      if (response.status == 200) {
-        // console.log("likes: " + JSON.stringify(response.data.data.likes));
-        return !alreadyLiked;
-      }
-    } catch (error) {
-
-      Alert.alert("Erro ao dar like ou unlike:", error.response.data.message)
+      Alert.alert("Erro ao consultar comunidade", error.response.data.message)
     }
   }
-  const createComment = async (id) => {
 
-    const commentData = {
-      "content": newComment
-    }
-    try {
-      const response = await api.post(`/post/${id}/comment`, commentData);
-      if (response.status == 201) {
-        Alert.alert("Comentário criado com sucesso");
-        return response.data.data.comments;
-      }
-    } catch (error) {
-      Alert.alert("Erro ao criar comentário", error.response.data.message)
-    }
-
+  const isUserInCommunity = (comunidade, id) => {
+    return comunidade.members.some(member => member.user.id == id);
   }
-
-  // Componente LikeButton
-  const LikeButton = ({ post }) => {
-    const [liked, setLiked] = useState(didUserLikePost(post));
-    const [likeCount, setLikeCount] = useState(post.likeCount);
-    const toggleLike = async (id, alreadyLiked) => {
-      let newLikedState = await like(id, alreadyLiked);
-      if (newLikedState) {
-        setLikeCount(likeCount + 1);
-      } else {
-        setLikeCount(likeCount - 1);
-      }
-      setLiked(newLikedState);
-    };
-
-    return (
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <TouchableOpacity onPress={() => toggleLike(post.id, liked)}>
-          <AntDesign
-            name={liked ? 'heart' : 'hearto'}
-            size={32}
-            color='orange'
-            margin={20}
-          />
-        </TouchableOpacity>
-        <Text>{likeCount}</Text>
-      </View>
-    );
-  };
-
-  // Componente CommentButton
-  const CommentButton = ({ id }) => {
-    return (
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <TouchableOpacity onPress={() => openCommentsModal(id)}>
-          <AntDesign name="message1" size={32} color='orange' />
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  // Componente para exibir cada comentário
-  const Comment = ({ comment }) => {
-    if (!comment) return null;
-    comment = comment.item;
-    return (
-      <>
-        <View style={styles.commentContainer}>
-          <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', { userId: comment.author.id })}>
-            <Image source={{ uri: comment.author.profilePictureURL }} style={styles.commentUserImage} />
-          </Pressable>
-          <View>
-            <Text style={styles.userName}>{comment.author.name}</Text>
-            <Text style={styles.userHandle}>@{comment.author.username}</Text>
-            <Text style={styles.commentText}>{comment.content}</Text>
-          </View>
-        </View>
-      </>
-    );
-  };
-
-  const renderPosts = ({ item }) => {
-    if (!item || !item.author) {
-
-      return null;
-    }
-    let post = item;
-
-
-    return (
-      <>
-        {/* Seção de Publicação */}
-        <View style={styles.newPublication}>
-          <View style={styles.header}>
-            <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', { userId: post.author.id })}>
-              <Image
-                source={{ uri: post.author.profilePictureURL }}
-                style={styles.userImage}
-              />
-            </Pressable>
-            <View>
-              <Text style={styles.userName}>{post.author.name}</Text>
-              <Text style={styles.userHandle}>@{post.author.username}</Text>
-            </View>
-            <Pressable onPress={() => openReportModal(post.id)} style={styles.optionsButton}>
-              <Text style={styles.moreOptions}>...</Text>
-            </Pressable>
-          </View>
-          <Text style={styles.publicationText}>{post.content}</Text>
-          {post.image != null ? <Image
-            source={{ uri: post.image }}
-            style={styles.publicationImage}
-            onPress={() => openCommentsModal(post.id)} // Abre o modal de comentários ao pressionar a imagem
-          /> : null}
-
-          {/* LIKE BUTTON */}
-          <View style={styles.likeButtonContainer}>
-            <LikeButton post={post} />
-            <CommentButton id={post.id} />
-          </View>
-
-          {/* Modal para Comentários */}
-          <Modal animationType="slide" transparent={true} visible={visibleCommentsForPost === post.id} onRequestClose={closeCommentsModal}>
-            <View style={styles.modalBackground}>
-              <View style={styles.modalContainer}>
-                <Text style={styles.modalTitle}>Comentários</Text>
-                <View style={styles.header}>
-                  <Image
-                    source={{ uri: post.author.profilePictureURL }}
-                    style={styles.userImage}
-                  />
-                  <View>
-                    <Text style={styles.userName}>{post.author.name}</Text>
-                    <Text style={styles.userHandle}>@{post.author.username}</Text>
-                  </View>
-                </View>
-                <Text style={styles.publicationText}>{post.content}</Text>
-                {post.image ? <Image source={{ uri: post.image }} style={styles.publicationImage} /> : null}
-                <FlatList
-                  data={item.comments}
-                  renderItem={(item) => item ? <Comment comment={item} /> : null} // Renderiza cada comentário
-                  keyExtractor={(item) => item.id.toString()}
-                  style={styles.comments}
-                />
-                <TextInput
-                  style={styles.commentInput}
-                  placeholder="Adicione um comentário..."
-                  value={newComment}
-                  onChangeText={setNewComment}
-                />
-                <TouchableOpacity onPress={() => handleAddComment(post.id)} style={styles.addCommentButton}>
-                  <Text style={styles.addCommentButtonText}>Enviar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => setVisibleCommentsForPost(null)} style={styles.closeButton}>
-                  <Text style={styles.closeButtonText}>Fechar</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
-
-          {/* Modal para Denúncia */}
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={reportModal == post.id}
-            onRequestClose={() => closeReportModal()}
-          >
-            <View style={styles.modalBackground}>
-              <View style={styles.modalContainer}>
-                <Text style={styles.modalTitle}>Denunciar Postagem</Text>
-                <TextInput value={reportValue} onChangeText={setReportValue} style={styles.reportInput} placeholder="Motivo da denúncia" />
-                <TouchableOpacity onPress={() => handleReport(post.id)} style={styles.reportButton}>
-                  <Text style={styles.reportButtonText}>Enviar Denúncia</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
-        </View>
-      </>
-    );
-  }
-
 
   useFocusEffect(
     useCallback(() => {
       const fetchFeed = async () => {
         const feedData = await getFeed();
         const comunidade = await getCommunity();
-
         setPosts(feedData);
         setComunidade(comunidade);
-
-        if (comunidade.members.some(member => member.user.id == userData.id)) {
-
-        } else {
-          await joinCommunity();
-        }
+        setInCommunity(isUserInCommunity(comunidade, storedUser.id));
       };
       fetchFeed();
     }, [])
@@ -350,14 +103,6 @@ const TimelineComunidade = ({ navigation, route }) => {
           style={styles.headerBannerImage}
         ></Image>
         <View style={styles.nav}>
-          <View style={styles.navButton}>
-            <Pressable onPress={() => navigation.navigate('Timeline')}>
-              <Image
-                source={require("../../../assets/voltar.png")}
-                style={styles.voltar}
-              />
-            </Pressable>
-          </View>
         </View>
         <View>
         </View>
@@ -365,20 +110,40 @@ const TimelineComunidade = ({ navigation, route }) => {
           source={{ uri: comunidade.communityImageUrl }}
           style={styles.imagemComunidade}
         />
-        <View>
+        <View style={{ marginTop: 25 }}>
           <Text style={styles.headerTitleBanner}>{comunidade.name}</Text>
           <Text style={styles.headerMember}>{comunidade.memberCount} membro(s)</Text>
         </View>
         <View>
-          {/* <Pressable style={styles.botaoEntrar}><Text style={{color: 'white', fontSize: 20}}>Entrar</Text></Pressable> */}
+          {
+            comunidade ?
+              comunidade.creator.id == userData.id ?
+                <BotaoEditarComunidade community={comunidade} navigation={navigation} />
+                :
+                inCommunity ?
+                  <Pressable onPress={() => leaveCommunity()} style={styles.botao}><Text style={{ color: 'white', fontSize: 15 }}>Sair</Text></Pressable>
+                  :
+                  <Pressable style={styles.botao} onPress={() => joinCommunity()}><Text style={{ color: 'white', fontSize: 15 }}>Entrar</Text></Pressable>
+              :
+              null
+          }
         </View>
       </View>
-      {posts.length === 0 ? <Text style={{ textAlign: 'center', marginTop: 10, fontSize: 15 }}>A comunidade não possui posts. Crie um!</Text> : <FlatList
-        data={posts}
-        renderItem={renderPosts}
-        keyExtractor={item => item.id}
-        style={styles.feed}
-      />}
+      <View style={{ display: 'flex', justifyContent: 'center', margin: 10, }}>
+        <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Sobre: </Text>
+        <Text>{comunidade.description}</Text>
+      </View>
+      {posts.length === 0 ? <Text style={{ textAlign: 'center', marginTop: 10, fontSize: 15 }}>A comunidade não possui posts. Crie um!</Text> :
+        <>
+          <Text style ={{fontWeight: 'bold', textAlign: 'center', margin: 5, fontSize: 20}}>Publicações</Text>
+          <FlatList
+            data={posts}
+            renderItem={(item) => <PostCard post={item.item} navigation={navigation} handleDeletePost={handleDeletePost}></PostCard>}
+            keyExtractor={item => item.id.toString()}
+            style={styles.posts}
+          />
+        </>
+      }
       <BottomMenuComunidade idComunidade={idComunidade} />
     </View>
   );
@@ -747,14 +512,15 @@ const styles = StyleSheet.create({
   },
   posts: {
     flex: 1,
+    marginBottom: 40,
+    padding: 10,
   },
   comments: {
     maxHeight: 200
   },
-  botaoEntrar: {
+  botao: {
     display: 'flex',
     width: '25%',
-    height: 40,
     marginLeft: width * 0.70,
     marginTop: -10,
     backgroundColor: '#ff6f00',
@@ -762,8 +528,8 @@ const styles = StyleSheet.create({
     alignItems: 'center'
     , justifyContent: 'center',
     borderRadius: 10,
-    color: 'white'
-
+    color: 'white',
+    height: 30,
   }
 });
 

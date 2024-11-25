@@ -1,9 +1,9 @@
 import { View, Text, Image, StyleSheet, Pressable, Dimensions } from 'react-native';
 import LikeButton from '../LikeButton';
 import CommentButton from '../CommentButton';
-import PostMenuDialog from '../PostMenuDialog';
+import PostMenuDialogCard from '../PostMenuDialogCard';
 const { width, height } = Dimensions.get('window');
-const PostCard = ({ post, navigation }) => {
+const PostCard = ({ post, navigation, handleDeletePost }) => {
     return (
         <>
             {/* Seção de Publicação */}
@@ -27,7 +27,7 @@ const PostCard = ({ post, navigation }) => {
                             <Text style={styles.userNameCommunity}>{post.author.name}</Text>
                             <Text style={styles.userHandle}>@{post.author.username}</Text>
                         </View>
-                        <PostMenuDialog post={post}></PostMenuDialog>
+                        <PostMenuDialogCard post={post} onDeletePost={handleDeletePost} navigation={navigation}></PostMenuDialogCard>
                     </View> :
                     <View style={styles.header}>
                         <Pressable onPress={() => navigation.navigate('PerfilOutraPessoa', { userId: post.author.id })}>
@@ -40,7 +40,7 @@ const PostCard = ({ post, navigation }) => {
                             <Text style={styles.userName}>{post.author.name}</Text>
                             <Text style={styles.userHandle}>@{post.author.username}</Text>
                         </View>
-                        <PostMenuDialog post={post}></PostMenuDialog>
+                        <PostMenuDialogCard post={post} onDeletePost={handleDeletePost} navigation={navigation}></PostMenuDialogCard>
                     </View>
                 }
 

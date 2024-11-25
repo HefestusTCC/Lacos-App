@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { View, Text, Image, StyleSheet, FlatList, Pressable, Alert, Dimensions, Modal, TextInput, Button } from 'react-native';
 import api from '../../config/api.js';
 import BottomMenu from '../../components/BottomMenu';
+import ComunidadeMenuDialog from '../../components/ComunidadeMenuDialog/index.js';
 const { width, height } = Dimensions.get('window');
 
 export default function ({ navigation }) {
@@ -21,6 +22,10 @@ export default function ({ navigation }) {
         }
     }, []);
 
+    const handleDeleteCommunity = (comunidadeId) => {
+        setComunidades((prevComunidades) => prevComunidades.filter((comunidade) => comunidade.id !== comunidadeId));
+    };
+
     // Usando o useFocusEffect para atualizar as comunidades sempre que a tela for focada
     useFocusEffect(
         useCallback(() => {
@@ -28,26 +33,12 @@ export default function ({ navigation }) {
         }, [getCommunities])
     );
 
-    const handleDenuncia = (communityId) => {
-        setSelectedCommunityId(communityId); // Define a comunidade a ser denunciada
-        setModalVisible(true); // Abre o modal de denúncia
-    };
-
-    const handleSubmitDenuncia = () => {
-        if (!denunciaText.trim()) {
-            Alert.alert("Erro", "Você precisa escrever algo para denunciar!");
-            return;
-        }
-
-        // Aqui você pode fazer a lógica para enviar a denúncia para o backend
-        console.log(`Denúncia para a comunidade ${selectedCommunityId}: ${denunciaText}`);
-
-        setModalVisible(false); // Fecha o modal
-        setDenunciaText(''); // Limpa o campo de texto da denúncia
-    };
 
     const renderItem = ({ item }) => (
         <View style={styles.communityCard}>
+            <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', width: '100%'}}>
+                <ComunidadeMenuDialog community={item} onDeleteCommunity={handleDeleteCommunity} navigation={navigation} />
+            </View>
             <Pressable onPress={() => navigation.navigate('TimelineComunidade', { id: item.id })}>
                 <Image
                     source={{ uri: item.communityImageUrl }}
@@ -56,10 +47,6 @@ export default function ({ navigation }) {
                 <Text style={styles.communityName}>{item.name}</Text>
             </Pressable>
 
-            {/* Botão de denúncia com texto "..." */}
-            <Pressable style={styles.denunciarButton} onPress={() => handleDenuncia(item.id)}>
-                <Text style={styles.denunciarText}>...</Text>
-            </Pressable>
         </View>
     );
 
@@ -98,7 +85,6 @@ export default function ({ navigation }) {
                         data={comunidades}
                         renderItem={renderItem}
                         keyExtractor={item => item.id.toString()}
-                        numColumns={3} 
                         contentContainerStyle={styles.communitiesRow}
                     />
                 </View>
@@ -110,31 +96,7 @@ export default function ({ navigation }) {
                 />
             </View>
 
-            {/* Modal de denúncia */}
-            <Modal
-                visible={modalVisible}
-                animationType="slide"
-                transparent={true}
-                onRequestClose={() => setModalVisible(false)} // Fecha o modal ao pressionar o botão de "voltar"
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContainer}>
-                        <Text style={styles.modalTitle}>Denunciar Comunidade</Text>
-                        <TextInput
-                            style={styles.textInput}
-                            placeholder="Escreva sua denúncia aqui..."
-                            value={denunciaText}
-                            onChangeText={setDenunciaText}
-                            multiline
-                            numberOfLines={4}
-                        />
-                        <View style={styles.modalButtons}>
-                            <Button title="Cancelar" onPress={() => setModalVisible(false)} />
-                            <Button title="Enviar Denúncia" onPress={handleSubmitDenuncia} />
-                        </View>
-                    </View>
-                </View>
-            </Modal>
+
             <BottomMenu></BottomMenu>
         </>
     );
@@ -202,17 +164,23 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     communitiesRow: {
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
+        flexWrap: 'wrap',
+        display: 'flex',
+        flexDirection: 'row',
+        width: width - 15,
     },
     communityCard: {
         alignItems: 'center',
-        width: '30%',
-        marginBottom: height * 0.03,
-        marginHorizontal: width * 0.01,
+        width: 150,
+        margin: 15,
         backgroundColor: '#f5f5f5',
         borderRadius: 10,
         padding: 10,
-        position: 'relative', // Necessário para posicionar o botão de denúncia
+        display: 'flex',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        flex: 1,
     },
     communityImage: {
         width: width * 0.25,
@@ -224,6 +192,7 @@ const styles = StyleSheet.create({
         fontSize: height * 0.015,
         color: '#333',
         marginTop: 5,
+        maxWidth: '90%'
     },
     denunciarButton: {
         position: 'absolute',
@@ -254,7 +223,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 10,
-        
+
     },
     textInput: {
         width: '100%',
@@ -265,12 +234,12 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         padding: 10,
         textAlignVertical: 'top',
-        
+
     },
     modalButtons: {
         width: '100%',
         flexDirection: 'row',
         justifyContent: 'space-around',
-        backgroundColor:'orange',
+        backgroundColor: 'orange',
     },
 });
