@@ -27,7 +27,6 @@ const App = ({ navigation }) => {
     };
     try {
       const response = await axios.post(`${SERVER_IP}/users/login`, userData);
-      //console.log(response);
       if (response.status === 200) {
         setEmail("");
         setPassword("");
@@ -39,6 +38,7 @@ const App = ({ navigation }) => {
         Alert.alert("Erro", "O e-mail ou senha informados estão incorretos.");
       }
     } catch (error) {
+      console.error("Erro na requisição:", error);
       if (error.response.data.error == "Usuário banido"){
         Alert.alert("Você foi banido.", error.response.data.message);
         return;
