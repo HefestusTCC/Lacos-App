@@ -138,7 +138,7 @@ const Index = ({ navigation, route }) => {
                 <Image source={{ uri: image }} style={styles.imageBackground} />
             ) : (
                 <Pressable onPress={pickImage} style={styles.imageButton}>
-                    <Icon name="image" size={40} color="black" /> // Ícone de imagem
+                    <Icon name="image" size={40} color="black" /> 
                 </Pressable>
             )}
 
@@ -174,6 +174,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,
+        marginTop:5,
     },
     image: {
         width: '100%',
