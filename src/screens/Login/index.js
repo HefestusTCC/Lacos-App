@@ -39,6 +39,10 @@ const App = ({ navigation }) => {
         Alert.alert("Erro", "O e-mail ou senha informados estão incorretos.");
       }
     } catch (error) {
+      if (error.response.data.error == "Usuário banido"){
+        Alert.alert("Você foi banido.", error.response.data.message);
+        return;
+      }
       Alert.alert("Erro de credencial", "O e-mail ou senha informados estão incorretos.");
     }
   };
